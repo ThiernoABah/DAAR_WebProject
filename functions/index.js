@@ -4,6 +4,7 @@ admin.initializeApp();
 const db = admin.firestore();
 const path = require('path');
 const os = require('os');
+const fs = require('fs');
 
 function sleep(ms){
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -26,22 +27,36 @@ exports.storageTreat = functions.storage.object().onFinalize(async (object) => {
 
     await bucket.file(filePath).download({destination: tempFilePath});
 
-    var lineReader = require('readline').createInterface({
-        input: require('fs').createReadStream(tempFilePath)
+    var words = new Set();
+    var textByLine = fs.readFileSync(tempFilePath).toString().split("\n");
+    textByLine.forEach(async line => {
+      var numFruit = line.replace(/(\r\n|\n|\r)/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]'));
+      numFruit.forEach(async word =>{
+        words.add(word);
       });
+    });
+    console.log(words);
 
-      var x = new Set();
-      // new RegExp(' |[.]|[,]|[?]|[!]')
-      lineReader.on('line', function (line) {
-        var res = line.split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]'));
-        var cpt;
-        for (cpt = 0; cpt < res.length; cpt++) {
-            x.add(res[cpt]);
-        }
-      });
-      await sleep(2000)
-      console.log(x);
+/// A CORRIGER ////
+    var line = 0;
+    words.forEach(async w =>{
+      db.collection('livres').doc(w).set({lignes:""});
+      textByLine.forEach(async line => {
+        var numFruit = line.replace(/(\r\n|\n|\r)/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]'));
+        numFruit.forEach(async word =>{
+          if(w === word){
+            old = db.collection('livres').doc(w).get(lignes);
+            old = old +","+line
+            db.collection('livres').doc(w).update({lignes,old});
+          }
+        });
+        line = line + 1;
+    })
+  });
 
+  ////
+
+  
   //   fs.readFile(tempFilePath, function (err, data) {
   //   if (err) {
   //      return console.error(err);
