@@ -1,3 +1,5 @@
+//firebase deploy --only functions --project prismaticos-ebe3f
+
 const functions = require('firebase-functions');
 const admin = require("firebase-admin");
 admin.initializeApp();
@@ -17,7 +19,10 @@ exports.helloWorld = functions.https.onRequest((request, response) => {
  response.send("Hello from Firebase!");
 });
 
-exports.storageTreat = functions.storage.object().onFinalize(async (object) => {
+exports.storageTreat = functions
+.runWith({memory: "1GB", timeoutSeconds:540})
+.storage.object()
+.onFinalize(async (object) => {
     const fileBucket = object.bucket; // The Storage bucket that contains the file.
     const filePath = object.name; // File path in the bucket.
     const contentType = object.contentType; // File content type.    
@@ -30,38 +35,43 @@ exports.storageTreat = functions.storage.object().onFinalize(async (object) => {
     var words = new Set();
     var textByLine = fs.readFileSync(tempFilePath).toString().split("\n");
     textByLine.forEach(async line => {
-      var numFruit = line.replace(/(\r\n|\n|\r)/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]'));
-      numFruit.forEach(async word =>{
+      var tmpMots = line.replace(/(\r\n|\n|\r)/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]'));
+      tmpMots.forEach(async word =>{
         words.add(word);
       });
     });
-    console.log(words);
+    // console.log(words);
+ 
+    var myMap = new Map();
 
-/// A CORRIGER ////
-    var line = 0;
     words.forEach(async w =>{
-      db.collection('livres').doc(w).set({lignes:""});
+      myMap.set(w,"");
+      var cpt = 0;
       textByLine.forEach(async line => {
-        var numFruit = line.replace(/(\r\n|\n|\r)/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]'));
-        numFruit.forEach(async word =>{
+        var tmpMots = line.replace(/(\r\n|\n|\r)/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]'));
+        tmpMots.forEach(async word =>{
           if(w === word){
-            old = db.collection('livres').doc(w).get(lignes);
-            old = old +","+line
-            db.collection('livres').doc(w).update({lignes,old});
+            old = myMap.get(w)
+            if(old === ""){
+              old = old +cpt
+            }
+            else{
+              old = old +","+cpt
+            }
+            myMap.set(w,old)
           }
         });
-        line = line + 1;
+        cpt = cpt + 1;
     })
   });
+  // console.log(myMap);
 
-  ////
-
-  
-  //   fs.readFile(tempFilePath, function (err, data) {
-  //   if (err) {
-  //      return console.error(err);
-  //      }
-  //      db.collection('livres').add({titre:object.name, auteur:data.toString()})
-  //    });
+    myMap.forEach(async (value, key) =>{
+      if(key !== ''){
+          db.collection('livres').doc(object.name).collection('mots').doc(key).set({lignes:value});
+      }
+    });
 
   });
+
+ 
