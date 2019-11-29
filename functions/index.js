@@ -12,66 +12,46 @@ function sleep(ms){
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// // Create and Deploy Your First Cloud Functions
-// // https://firebase.google.com/docs/functions/write-firebase-functions
-
-exports.helloWorld = functions.https.onRequest((request, response) => {
- response.send("Hello from Firebase!");
-});
-
 exports.storageTreat = functions
 .runWith({memory: "1GB", timeoutSeconds:540})
 .storage.object()
 .onFinalize(async (object) => {
     const fileBucket = object.bucket; // The Storage bucket that contains the file.
     const filePath = object.name; // File path in the bucket.
-    const contentType = object.contentType; // File content type.    
 
     const bucket = admin.storage().bucket(fileBucket);
     const tempFilePath = path.join(os.tmpdir(), object.name);
 
     await bucket.file(filePath).download({destination: tempFilePath});
 
-    var words = new Set();
+    var myMap = new Map();
+    var cpt = 0;
+
     var textByLine = fs.readFileSync(tempFilePath).toString().split("\n");
     textByLine.forEach(async line => {
       var tmpMots = line.replace(/(\r\n|\n|\r)/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]'));
       tmpMots.forEach(async word =>{
-        words.add(word);
-      });
-    });
-    // console.log(words);
- 
-    var myMap = new Map();
-
-    words.forEach(async w =>{
-      myMap.set(w,"");
-      var cpt = 0;
-      textByLine.forEach(async line => {
-        var tmpMots = line.replace(/(\r\n|\n|\r)/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]'));
-        tmpMots.forEach(async word =>{
-          if(w === word){
-            old = myMap.get(w)
-            if(old === ""){
-              old = old +cpt
-            }
-            else{
-              old = old +","+cpt
-            }
-            myMap.set(w,old)
+        if(word.length>2){
+          if(!myMap.has(word)){
+            myMap.set(word,String(cpt));
           }
-        });
-        cpt = cpt + 1;
-    })
-  });
-  // console.log(myMap);
-
-    myMap.forEach(async (value, key) =>{
+          else{
+            myMap.set(word,myMap.get(word)+","+cpt);
+          }
+        }
+      });
+      cpt = cpt + 1;
+    });
+    // console.log(myMap);
+ 
+    // cette partie marche pas pour de grand document
+    return myMap.forEach(async (value, key) =>{
       if(key !== ''){
-          db.collection('livres').doc(object.name).collection('mots').doc(key).set({lignes:value});
+          db.collection('livres').doc(object.name).collection('mots').doc(key.replace("/","")).set({lignes:value});
       }
     });
 
+    // return sleep(2000)
   });
 
  
