@@ -44,17 +44,20 @@ exports.storageTreat = functions
     });
     console.log(myMap);
     console.log(myMap.size);
- cpt2 = 0
+    cpt2 = 0
     // cette partie marche pas pour de grand document gaffe au cpt2 < 500
-    myMap.forEach((value, key) =>{
-      if(key !== '' && cpt2<500){
-          db.collection('livres').doc(object.name).collection('mots').doc(key.replace("/","")).create({lignes:value});
+    myMap.forEach(async(value, key) =>{
+   //   if(key !== '' && cpt2<500){
+
+          db.collection('livres').doc(object.name).collection('mots').doc(key.replace("/","")).create({key:value});
+          // db.collection('livres').doc(object.name).collection('mots').doc("APPPP"+cpt2).create({lignes:"2"});
+
           // console.log("ici"+object.name+":"+key+":"+value);
           cpt2 = cpt2 + 1
-      }
+ //     }
     });
 
-    console.log("cpt2 : "+cpt2+" cpt 1 :"+cpt);
+    // console.log("cpt2 : "+cpt2+" cpt 1 :"+cpt);
     // return sleep(2000)
   });
 
