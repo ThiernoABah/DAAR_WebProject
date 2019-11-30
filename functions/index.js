@@ -29,7 +29,7 @@ exports.storageTreat = functions
 
     var textByLine = fs.readFileSync(tempFilePath).toString().split("\n");
     textByLine.forEach(line => {
-      var tmpMots = line.replace(/(\r\n|\n|\r)/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]|[/]|[:]'));
+      var tmpMots = line.replace(/(\r\n|\n|\r)/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]|[/]|[:]|[;]'));
       tmpMots.forEach(word =>{
         if(word.length>2){
           if(!myMap.has(word)){
@@ -42,15 +42,19 @@ exports.storageTreat = functions
       });
       cpt = cpt + 1;
     });
-    // console.log(myMap);
- 
-    // cette partie marche pas pour de grand document
-    return myMap.forEach((value, key) =>{
-      if(key !== ''){
+    console.log(myMap);
+    console.log(myMap.size);
+ cpt2 = 0
+    // cette partie marche pas pour de grand document gaffe au cpt2 < 500
+    myMap.forEach((value, key) =>{
+      if(key !== '' && cpt2<500){
           db.collection('livres').doc(object.name).collection('mots').doc(key.replace("/","")).create({lignes:value});
+          // console.log("ici"+object.name+":"+key+":"+value);
+          cpt2 = cpt2 + 1
       }
     });
 
+    console.log("cpt2 : "+cpt2+" cpt 1 :"+cpt);
     // return sleep(2000)
   });
 
