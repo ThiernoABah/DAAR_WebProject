@@ -28,9 +28,9 @@ exports.storageTreat = functions
     var cpt = 0;
 
     var textByLine = fs.readFileSync(tempFilePath).toString().split("\n");
-    textByLine.forEach(async line => {
-      var tmpMots = line.replace(/(\r\n|\n|\r)/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]'));
-      tmpMots.forEach(async word =>{
+    textByLine.forEach(line => {
+      var tmpMots = line.replace(/(\r\n|\n|\r)/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]|[/]|[:]'));
+      tmpMots.forEach(word =>{
         if(word.length>2){
           if(!myMap.has(word)){
             myMap.set(word,String(cpt));
@@ -45,9 +45,9 @@ exports.storageTreat = functions
     // console.log(myMap);
  
     // cette partie marche pas pour de grand document
-    return myMap.forEach(async (value, key) =>{
+    return myMap.forEach((value, key) =>{
       if(key !== ''){
-          db.collection('livres').doc(object.name).collection('mots').doc(key.replace("/","")).set({lignes:value});
+          db.collection('livres').doc(object.name).collection('mots').doc(key.replace("/","")).create({lignes:value});
       }
     });
 
