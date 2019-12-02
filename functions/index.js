@@ -13,6 +13,7 @@ function sleep(ms){
 }
 
 exports.storageTreat = functions
+.region('europe-west2')
 .runWith({memory: "1GB", timeoutSeconds:540})
 .storage.object()
 .onFinalize(async (object) => {
@@ -29,36 +30,32 @@ exports.storageTreat = functions
 
     var textByLine = fs.readFileSync(tempFilePath).toString().split("\n");
     textByLine.forEach(line => {
-      var tmpMots = line.replace(/(\r\n|\n|\r)/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]|[/]|[:]|[;]'));
+      var tmpMots = line.replace(/(\r\n|\n|\r)/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]|[/]|[:]|[;]|["]'));
+
       tmpMots.forEach(word =>{
         if(word.length>2){
           if(!myMap.has(word)){
-            myMap.set(word,String(cpt));
+            myMap.set(word,1);
           }
           else{
-            myMap.set(word,myMap.get(word)+","+cpt);
+            myMap.set(word,myMap.get(word)+1);
           }
         }
       });
       cpt = cpt + 1;
     });
-    console.log(myMap);
+    // console.log(myMap);
     console.log(myMap.size);
-    cpt2 = 0
-    // cette partie marche pas pour de grand document gaffe au cpt2 < 500
-    myMap.forEach(async(value, key) =>{
-   //   if(key !== '' && cpt2<500){
 
-          db.collection('livres').doc(object.name).collection('mots').doc(key.replace("/","")).create({key:value});
-          // db.collection('livres').doc(object.name).collection('mots').doc("APPPP"+cpt2).create({lignes:"2"});
-
-          // console.log("ici"+object.name+":"+key+":"+value);
-          cpt2 = cpt2 + 1
- //     }
-    });
-
-    // console.log("cpt2 : "+cpt2+" cpt 1 :"+cpt);
-    // return sleep(2000)
+    Promise.all(
+      Array.from(myMap).map(val=>{
+      key = val[0]
+      value = val[1]
+      return db.collection('livres').doc(object.name).collection('mots').doc(key.replace("/","")).create({occurence:value});}) )
+      .then(console.log("done"))
+      .catch(error => { 
+        console.error(error.message)
+      });
   });
 
  
