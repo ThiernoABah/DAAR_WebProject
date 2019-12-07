@@ -47,7 +47,7 @@ exports.storageTreat = functions
     // console.log(myMap);
     console.log(myMap.size);
 
-    Promise.all(
+    var variable = await Promise.all(
       Array.from(myMap).map(val=>{
       key = val[0]
       value = val[1]
