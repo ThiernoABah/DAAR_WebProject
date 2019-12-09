@@ -30,15 +30,15 @@ exports.storageTreat = functions
 
     var textByLine = fs.readFileSync(tempFilePath).toString().split("\n");
     textByLine.forEach(line => {
-      var tmpMots = line.replace(/(\r\n|\n|\r)/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]|[/]|[:]|[;]|["]'));
-
+      var tmpMots = line.replace(/(\r\n|\n|\r)/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]|[/]|[:]|[;]|["]|[@]|[*]|[0-9]|[-]|[\']|[_]'));
+      
       tmpMots.forEach(word =>{
         if(word.length>2){
-          if(!myMap.has(word)){
-            myMap.set(word,1);
+          if(!myMap.has(word.toLowerCase())){
+            myMap.set(word.toLowerCase(),1);
           }
           else{
-            myMap.set(word,myMap.get(word)+1);
+            myMap.set(word.toLowerCase(),myMap.get(word.toLowerCase())+1);
           }
         }
       });
@@ -51,7 +51,7 @@ exports.storageTreat = functions
       Array.from(myMap).map(val=>{
       key = val[0]
       value = val[1]
-      return db.collection('livres').doc(object.name).collection('mots').doc(key.replace("/","")).create({occurence:value});}) )
+      return db.collection('livres').doc(object.name).collection('mots').doc(key.replace("/","")).set({occurence:value});}) )
       .then(console.log("done"))
       .catch(error => { 
         console.error(error.message)
