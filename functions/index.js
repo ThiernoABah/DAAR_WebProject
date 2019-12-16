@@ -30,7 +30,7 @@ exports.storageTreat = functions
 
     var textByLine = fs.readFileSync(tempFilePath).toString().split("\n");
     textByLine.forEach(line => {
-      var tmpMots = line.replace(/(\r\n|\n|\r)/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]|[/]|[:]|[;]|["]|[@]|[*]|[0-9]|[-]|[\']|[_]'));
+      var tmpMots = line.replace(/(\r\n|\n|\r|[-])/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]|[/]|[:]|[;]|["]|[@]|[*]|[0-9]|[-]|[\']|[_]'));
       
       tmpMots.forEach(word =>{
         if(word.length>2){
@@ -44,18 +44,17 @@ exports.storageTreat = functions
       });
       cpt = cpt + 1;
     });
-    // console.log(myMap);
+
     console.log(myMap.size);
 
-    var variable = await Promise.all(
-      Array.from(myMap).map(val=>{
-      key = val[0]
-      value = val[1]
-      return db.collection('livres').doc(object.name).collection('mots').doc(key.replace("/","")).set({occurence:value});}) )
-      .then(console.log("done"))
-      .catch(error => { 
-        console.error(error.message)
-      });
+    var data = {};
+    for (var [key, value] of myMap) {
+      data[key] = value
+    }
+
+    await db.collection('livres').doc(object.name).set(data)
+    
+    
   });
 
  
