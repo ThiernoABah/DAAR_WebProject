@@ -25,7 +25,6 @@ exports.storageTreat = functions
 
     await bucket.file(filePath).download({destination: tempFilePath});
 
-    //var myMap = new Map();
     var data = {};
     var cpt = 0;
 
@@ -42,24 +41,10 @@ exports.storageTreat = functions
             data[word.toLowerCase()] = 1
           }
        }
-        /*if(word.length>2){
-          if(!myMap.has(word.toLowerCase())){
-            myMap.set(word.toLowerCase(),1);
-          }
-          else{
-            myMap.set(word.toLowerCase(),myMap.get(word.toLowerCase())+1);
-          }
-        }*/
+        
       });
       cpt = cpt + 1;
     });
-
-    //console.log(myMap.size);
-
-    
-    /*for (var [key, value] of myMap) {
-      data[key] = value
-    }*/
 
     await db.collection('livres').doc(object.name).set(data)
     
@@ -104,6 +89,18 @@ exports.storageTreat = functions
   console.log(error)
   res.status(500).send(error)
 })
+
+  });
+
+  exports.deleteBook = functions
+  .region('europe-west2')
+  .runWith({memory: "1GB", timeoutSeconds:540})
+  .https.onRequest((req, res) => {
+ 
+    var book = req.path.replace("/","");
+
+  db.collection('livres').doc(book).delete();
+  return res.send(book+"deleted");
 
   });
 
