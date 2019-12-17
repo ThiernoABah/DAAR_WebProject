@@ -25,36 +25,86 @@ exports.storageTreat = functions
 
     await bucket.file(filePath).download({destination: tempFilePath});
 
-    var myMap = new Map();
+    //var myMap = new Map();
+    var data = {};
     var cpt = 0;
 
     var textByLine = fs.readFileSync(tempFilePath).toString().split("\n");
     textByLine.forEach(line => {
-      var tmpMots = line.replace(/(\r\n|\n|\r|[-])/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]|[/]|[:]|[;]|["]|[@]|[*]|[0-9]|[-]|[\']|[_]'));
+      var tmpMots = line.replace(/(\r\n|\n|\r|[-]|["])/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]|[/]|[:]|[;]|["]|[@]|[*]|[0-9]|[-]|[\']|[_]'));
       
       tmpMots.forEach(word =>{
         if(word.length>2){
+          if(data.hasOwnProperty(word.toLowerCase())){
+           data[word.toLowerCase()] = data[word.toLowerCase()] + 1
+          }
+         else{
+            data[word.toLowerCase()] = 1
+          }
+       }
+        /*if(word.length>2){
           if(!myMap.has(word.toLowerCase())){
             myMap.set(word.toLowerCase(),1);
           }
           else{
             myMap.set(word.toLowerCase(),myMap.get(word.toLowerCase())+1);
           }
-        }
+        }*/
       });
       cpt = cpt + 1;
     });
 
-    console.log(myMap.size);
+    //console.log(myMap.size);
 
-    var data = {};
-    for (var [key, value] of myMap) {
+    
+    /*for (var [key, value] of myMap) {
       data[key] = value
-    }
+    }*/
 
     await db.collection('livres').doc(object.name).set(data)
     
-    
+  });
+
+  exports.allBooks = functions
+  .region('europe-west2')
+  .runWith({memory: "1GB", timeoutSeconds:540})
+  .https.onRequest((req, res) => {
+
+    var msg = {};
+    i = 1;
+    db.collection('livres').get().then(querySnapshot => {
+        querySnapshot.forEach(doc => {
+          msg[i] = doc.id;
+          i = i + 1;
+        });
+        return res.send({books : msg});
+    })
+    .catch(error =>{
+      console.log(error)
+      res.status(500).send(error)
+    });
+
+    console.log(msg);
+
+  });
+
+  exports.getBook = functions
+  .region('europe-west2')
+  .runWith({memory: "1GB", timeoutSeconds:540})
+  .https.onRequest((req, res) => {
+ 
+    var book = req.path.replace("/","");
+
+  db.collection('livres').doc(book).get().then(snapshot => {
+    const d = snapshot.data()
+    return res.send(d)
+
+ })
+ .catch(error =>{
+  console.log(error)
+  res.status(500).send(error)
+})
+
   });
 
  
