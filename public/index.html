@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Welcome to Firebase Hosting</title>
+
+    <!-- update the version number as needed -->
+    <script defer src="/__/firebase/7.6.0/firebase-app.js"></script>
+    <!-- include only the Firebase features as you need -->
+    <script defer src="/__/firebase/7.6.0/firebase-auth.js"></script>
+    <script defer src="/__/firebase/7.6.0/firebase-database.js"></script>
+    <script defer src="/__/firebase/7.6.0/firebase-messaging.js"></script>
+    <script defer src="/__/firebase/7.6.0/firebase-storage.js"></script>
+    <!-- initialize the SDK after all desired features are loaded -->
+    <script defer src="/__/firebase/init.js"></script>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+   
+    <div class="content" id="all-books-content">
+      <button type="button" name="all-books" onclick="getAllBooks()" >Get all books</button>
+      <div class="content">
+          <ul id="books-list"></ul>
+      </div>
+  </div>
+
+  <div class="content" id="book-content">
+      <form id="get-book">
+          <input type="text" name = "name" placeholder="book name">
+          <button>Get book</button>
+      </form>
+      
+      <div>
+          <input type="button" id="first" onclick="firstPage()" value="first" />
+          <input type="button" id="next" onclick="nextPage()" value="next" />
+          <input type="button" id="previous" onclick="previousPage()" value="previous" />
+          <input type="button" id="last" onclick="lastPage()" value="last" />
+      
+          <div id="word-list"></div>
+      </div>
+
+  </div>
+
+    <script>
+      // Your web app's Firebase configuration
+      var firebaseConfig = {
+          apiKey: "AIzaSyDv8TK258MSXrDnrdHyDxZDXzQtqpxa1JY",
+          authDomain: "prismaticos-ebe3f.firebaseapp.com",
+          databaseURL: "https://prismaticos-ebe3f.firebaseio.com",
+          projectId: "prismaticos-ebe3f",
+          storageBucket: "prismaticos-ebe3f.appspot.com",
+          messagingSenderId: "399075689137",
+          appId: "1:399075689137:web:fde803912e711114665890",
+          measurementId: "G-21YCQT4YK3"
+      };
+  // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+
+  </script>
+  <script src="app.js"></script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+        // // The Firebase SDK is initialized and available here!
+        //
+        // firebase.auth().onAuthStateChanged(user => { });
+        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
+        // firebase.messaging().requestPermission().then(() => { });
+        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
+        //
+        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+
+        try {
+          let app = firebase.app();
+          let features = ['auth', 'database', 'messaging', 'storage'].filter(feature => typeof app[feature] === 'function');
+          document.getElementById('load').innerHTML = `Firebase SDK loaded with ${features.join(', ')}`;
+        } catch (e) {
+          console.error(e);
+          document.getElementById('load').innerHTML = 'Error loading the Firebase SDK, check the console.';
+        }
+      });
+    </script>
+  </body>
+</html>
