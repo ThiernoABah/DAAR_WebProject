@@ -69,7 +69,6 @@ exports.storageTreat = functions
       res.status(500).send(error)
     });
 
-    console.log(msg);
 
   });
 
