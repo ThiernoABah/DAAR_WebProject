@@ -6,7 +6,7 @@ const bookContent = document.querySelector('#book-content');
 var list = new Array();
 var pageList = new Array();
 var currentPage = 1;
-var numberPerPage = 20;
+var numberPerPage = 30;
 var numberOfPages = 0;
 
 // all books in data base
@@ -42,7 +42,7 @@ getBookForm.addEventListener('submit',(e) =>{
       list.push(mot);
     }
     numberOfPages = getNumberOfPages();
-    drawList(); // j'arrive pas a refresh la page
+    firstPage(); // j'arrive pas a refresh la page
     
  })
  .catch(error =>{
