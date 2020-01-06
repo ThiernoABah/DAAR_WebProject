@@ -30,8 +30,8 @@ exports.storageTreat = functions
 
     var textByLine = fs.readFileSync(tempFilePath).toString().split("\n");
     textByLine.forEach(line => {
-      var tmpMots = line.replace(/(\r\n|\n|\r|[-]|["])/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]|[/]|[:]|[;]|["]|[@]|[*]|[0-9]|[-]|[\']|[_]'));
-      
+      //var tmpMots = line.replace(/(\r\n|\n|\r|[-]|["])/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]|[/]|[:]|[;]|["]|[@]|[*]|[0-9]|[-]|[\']|[_]'));
+      var tmpMots = line.replace(/(\r\n|\n|\r|[-]|["])/gm," ").split(new RegExp("[^a-zA-Z']+"));
       tmpMots.forEach(word =>{
         if(word.length>2){
           if(data.hasOwnProperty(word.toLowerCase())){
@@ -103,4 +103,25 @@ exports.storageTreat = functions
 
   });
 
+  exports.search = functions
+  .region('europe-west2')
+  .runWith({memory: "1GB", timeoutSeconds:540})
+  .https.onRequest((req, res) => {
  
+  r = {}
+  var word = req.path.replace("/","");
+
+  db.collection('livres').get().then(querySnapshot => {
+    querySnapshot.forEach(book => {
+      d = book.data()
+      r[book.id] = d[word]
+    });
+    return res.send(r);
+  })
+  .catch(error =>{
+  console.log(error)
+  res.status(500).send(error)});
+
+
+
+  });
