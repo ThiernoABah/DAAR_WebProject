@@ -24,29 +24,61 @@ exports.storageTreat = functions
     const tempFilePath = path.join(os.tmpdir(), object.name);
 
     await bucket.file(filePath).download({destination: tempFilePath});
-
     var data = {};
-    var cpt = 0;
+    var lines;
 
-    var textByLine = fs.readFileSync(tempFilePath).toString().split("\n");
-    textByLine.forEach(line => {
-      //var tmpMots = line.replace(/(\r\n|\n|\r|[-]|["])/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]|[/]|[:]|[;]|["]|[@]|[*]|[0-9]|[-]|[\']|[_]'));
-      var tmpMots = line.replace(/(\r\n|\n|\r|[-]|["])/gm," ").split(new RegExp("[^a-zA-Z']+"));
-      tmpMots.forEach(word =>{
-        if(word.length>2){
-          if(data.hasOwnProperty(word.toLowerCase())){
-           data[word.toLowerCase()] = data[word.toLowerCase()] + 1
-          }
-         else{
-            data[word.toLowerCase()] = 1
-          }
-       }
-        
+    if(object.name === "id_node.txt"){
+      lines = fs.readFileSync(tempFilePath).toString().split("\n");
+      lines.forEach(line => {
+        var tmpMots = line.split(" ");
+        var node = tmpMots[0]
+        if (node !== ""){
+          data[node] = tmpMots[1];  
+        }
+       } );
+       await db.collection('graphe').doc(object.name).set(data)
+
+    }else if(object.name === "graph.txt"){
+      lines = fs.readFileSync(tempFilePath).toString().split("\n");
+      lines.forEach(line => {
+        var tmpMots = line.split(" ");
+        var node = tmpMots[0]
+        if (node !== ""){
+          for(i = 1;i<tmpMots.length;i++){
+            if(data.hasOwnProperty(node)){
+            data[node] = data[node] + " " + tmpMots[i]
+            }
+            else{
+              data[node] = tmpMots[i]
+            }
+          } 
+        }
+       } );
+       await db.collection('graphe').doc(object.name).set(data)
+    }
+    else{
+
+  
+      lines = fs.readFileSync(tempFilePath).toString().split("\n");
+      lines.forEach(line => {
+        //var tmpMots = line.replace(/(\r\n|\n|\r|[-]|["])/gm," ").split(new RegExp(' |[.]|[,]|[?]|[!]|[)]|[(]|[[]|[]]|[/]|[:]|[;]|["]|[@]|[*]|[0-9]|[-]|[\']|[_]'));
+        var tmpMots = line.replace(/(\r\n|\n|\r|[-]|["])/gm," ").split(new RegExp("[^a-zA-Z']+"));
+        tmpMots.forEach(word =>{
+          if(word.length>2){
+            if(data.hasOwnProperty(word.toLowerCase())){
+             data[word.toLowerCase()] = data[word.toLowerCase()] + 1
+            }
+           else{
+              data[word.toLowerCase()] = 1
+            }
+         }
+          
+        });
+
       });
-      cpt = cpt + 1;
-    });
-
-    await db.collection('livres').doc(object.name).set(data)
+  
+      await db.collection('livres').doc(object.name).set(data)
+    }
     
   });
 
