@@ -56,6 +56,64 @@ exports.storageTreat = functions
        } );
        await db.collection('graphe').doc(object.name).set(data)
     }
+    else if(object.name === "closeness.txt"){
+      lines = fs.readFileSync(tempFilePath).toString().split("\n");
+      lines.forEach(line => {
+        var tmpMots = line.split(" ");
+        var node = tmpMots[0]
+        if (node !== ""){
+          data[node] = tmpMots[1];  
+        }
+       } );
+       await db.collection('centrality').doc(object.name).set(data) 
+    }
+    else if(object.name === "pagerank.txt"){
+      lines = fs.readFileSync(tempFilePath).toString().split("\n");
+      lines.forEach(line => {
+        var tmpMots = line.split(" ");
+        var node = tmpMots[0]
+        if (node !== ""){
+          data[node] = tmpMots[1];  
+        }
+       } );
+       await db.collection('centrality').doc(object.name).set(data)
+    }
+    else if(object.name === "suggest_closeness.txt"){
+      lines = fs.readFileSync(tempFilePath).toString().split("\n");
+      lines.forEach(line => {
+        var tmpMots = line.split(" ");
+        var node = tmpMots[0]
+        if (node !== ""){
+          for(i = 1;i<tmpMots.length;i++){
+            if(data.hasOwnProperty(node)){
+            data[node] = data[node] + " " + tmpMots[i]
+            }
+            else{
+              data[node] = tmpMots[i]
+            }
+          } 
+        }
+       } );
+       await db.collection('suggest').doc(object.name).set(data)
+    }
+    else if(object.name === "suggest_pagerank.txt"){
+      lines = fs.readFileSync(tempFilePath).toString().split("\n");
+      lines.forEach(line => {
+        var tmpMots = line.split(" ");
+        var node = tmpMots[0]
+        if (node !== ""){
+          for(i = 1;i<tmpMots.length;i++){
+            if(data.hasOwnProperty(node)){
+            data[node] = data[node] + " " + tmpMots[i]
+            }
+            else{
+              data[node] = tmpMots[i]
+            }
+          } 
+        }
+       } );
+       await db.collection('suggest').doc(object.name).set(data)
+    }
     else{
 
   
