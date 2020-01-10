@@ -1,7 +1,15 @@
+const functions = require('firebase-functions');
+
+firebase.initializeApp(firebaseConfig);
+
+
+const db = firebase.firestore();
+
 const buttonGetAllBooks = document.querySelector('#all-books');
 const booksList = document.querySelector('#books-list');
 const getBookForm = document.querySelector('#get-book');
 const bookContent = document.querySelector('#book-content');
+
 
 var list = new Array();
 var pageList = new Array();

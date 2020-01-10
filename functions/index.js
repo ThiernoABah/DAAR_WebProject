@@ -211,7 +211,97 @@ exports.storageTreat = functions
   .catch(error =>{
   console.log(error)
   res.status(500).send(error)});
-
-
-
   });
+
+  exports.suggestUsingCloseness = functions
+  .region('europe-west2')
+  .runWith({memory: "1GB", timeoutSeconds:540})
+  .https.onRequest((req, res) => {
+ 
+  r = {}
+  var book = req.path.replace("/","");
+  db.collection('suggest').doc("suggest_closeness.txt").get().then(doc => {
+    if (doc.exists) {
+      r[book] = doc.data()[book];
+    } else {
+        console.log("No such document!");
+    }
+      return res.send(r);
+  })
+  .catch(error =>{
+  console.log(error)
+  res.status(500).send(error)});
+  });
+
+  exports.suggestUsingPagerank = functions
+  .region('europe-west2')
+  .runWith({memory: "1GB", timeoutSeconds:540})
+  .https.onRequest((req, res) => {
+ 
+  r = {}
+  var book = req.path.replace("/","");
+  db.collection('suggest').doc("suggest_pagerank.txt").get().then(doc => {
+    if (doc.exists) {
+      r[book] = doc.data()[book];
+    } else {
+        console.log("No such document!");
+    }
+      return res.send(r);
+  })
+  .catch(error =>{
+  console.log(error)
+  res.status(500).send(error)});
+  });
+
+  exports.getTitleFromId = functions
+  .region('europe-west2')
+  .runWith({memory: "1GB", timeoutSeconds:540})
+  .https.onRequest((req, res) => {
+ 
+  r = {}
+  var request = req.path.replace("/","");
+  var ids = request.split(" ");
+  ids.forEach(id =>{
+    db.collection('graphe').doc("id_node.txt").get().then(doc => {
+      if (doc.exists) {
+        r[id] = doc.data()[id];
+      } else {
+          console.log("No such document!");
+      }
+        return res.send(r);
+    })
+    .catch(error =>{
+    console.log(error)
+    res.status(500).send(error)});
+  })
+  
+  });
+
+  exports.getIdFromTitle = functions
+  .region('europe-west2')
+  .runWith({memory: "1GB", timeoutSeconds:540})
+  .https.onRequest((req, res) => {
+ 
+  r = {}
+  var request = req.path.replace("/",""); 
+ 
+    db.collection('graphe').doc("id_node.txt").get().then(doc => {
+      if (doc.exists) {
+        entries = Object.entries(doc.data())
+        for (const [id, title] of entries) {
+          if(title === request){
+            return res.send(id);
+          }
+        }
+
+      } else {
+          console.log("No such document!");
+      }
+        return res.send(r);
+    })
+    .catch(error =>{
+    console.log(error)
+    res.status(500).send(error)});
+  
+  });
+
