@@ -1,7 +1,7 @@
-const functions = require('firebase-functions');
+
 
 firebase.initializeApp(firebaseConfig);
-
+//const functions = require('firebase-functions'); require marche pas
 
 const db = firebase.firestore();
 
