@@ -1,117 +1,146 @@
-
-
 firebase.initializeApp(firebaseConfig);
-//const functions = require('firebase-functions'); require marche pas
 
 const db = firebase.firestore();
 
-const buttonGetAllBooks = document.querySelector('#all-books');
-const booksList = document.querySelector('#books-list');
-const getBookForm = document.querySelector('#get-book');
-const bookContent = document.querySelector('#book-content');
+const searchWordForm = document.querySelector('#search-word-form');
+const searchBookForm = document.querySelector('#search-book-form');
+const suggestBookForm = document.querySelector('#suggest-book-form');
+
+const basicList = document.querySelector('#basic-display');
+const suggestList = document.querySelector('#suggest-display');
 
 
-var list = new Array();
-var pageList = new Array();
-var currentPage = 1;
-var numberPerPage = 30;
-var numberOfPages = 0;
-
-// all books in data base
-function getAllBooks(){
-
-  db.collection('livres').get().then(querySnapshot => {
-      querySnapshot.forEach(doc => {
-        renderBook(doc.id)
-      });
-  })
-  .catch(error =>{
-    console.log(error)
-    res.status(500).send(error)
-  });
-
-}
-
-function renderBook(book){
-  let li = document.createElement('li');
-  let name = document.createElement('span');
-
-  li.setAttribute('book-id', book);
-  name.textContent = book;
-  li.appendChild(name);
-  booksList.appendChild(li);
-}
-
-getBookForm.addEventListener('submit',(e) =>{
+// Search a book
+searchBookForm.addEventListener('submit', (e) => {
   e.preventDefault();
-  db.collection('livres').doc(getBookForm.name.value).get().then(snapshot => {
-    for(key in snapshot.data()){
-      mot = key+" : "+snapshot.data()[key]
-      list.push(mot);
-    }
-    numberOfPages = getNumberOfPages();
-    firstPage(); // j'arrive pas a refresh la page
-    
- })
- .catch(error =>{
-  console.log(error)
-  res.status(500).send(error)
-})
-
-getBookForm.name.value = "";
+ bookTitle = searchBookForm.bookName.value
+  if ( bookTitle.length< 3) {
+    alert("your entrie is too short, enter at least 3 character");
+  }
+  else {
+    document.getElementById("basic-display").innerHTML = "";
+    fetch("https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/allBooks")
+      .then(data => { return data.json() })
+      .then(res => {
+        for (a in res.books) {
+          if (res.books[a].includes(bookTitle)) {
+            renderBook(res.books[a])
+          }
+        }
+      })
+  }
+  searchBookForm.bookName.value = ""
+  
 
 });
 
 
-function getNumberOfPages() {
-return Math.ceil(list.length / numberPerPage);
-}
 
-function nextPage() {
-currentPage += 1;
-loadList();
-}
+// Search word occurences in all books
+searchWordForm.addEventListener('submit', (e) => {
+  e.preventDefault();
 
-function previousPage() {
-currentPage -= 1;
-loadList();
-}
+  word = searchWordForm.searchWord.value
+  document.getElementById("basic-display").innerHTML = "";
 
-function firstPage() {
-currentPage = 1;
-loadList();
-}
+  const url = "https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/search" + "/" + word ;
+  fetch(url)
+    .then(data => { return data.json() })
+    .then(res => {
+      for (key in res) {
+        renderWordSearch(res[key].book, res[key].occurence);
+      }
+      
+    })
+    searchWordForm.searchWord.value = ""
+});
 
-function lastPage() {
-currentPage = numberOfPages;
-loadList();
-}
+// Book suggestion
+suggestBookForm.addEventListener('submit', async(e) => {
+  e.preventDefault();
 
-function loadList() {
-var begin = ((currentPage - 1) * numberPerPage);
-var end = begin + numberPerPage;
+  bookTitle = suggestBookForm.bookName.value
+  var finalRes = {}
 
-pageList = list.slice(begin, end);
-drawList();
-check();
-}
+  if (bookTitle.length < 3) {
+    alert("your entrie is too short, enter at least 3 character");
+  }
+  else {
 
-function drawList() {
-document.getElementById("word-list").innerHTML = "";
-for (r = 0; r < pageList.length; r++) {
-    document.getElementById("word-list").innerHTML += pageList[r] + "<br/>";
-}
-}
+    document.getElementById("basic-display").innerHTML = "";
 
-function check() {
-document.getElementById("next").disabled = currentPage == numberOfPages ? true : false;
-document.getElementById("previous").disabled = currentPage == 1 ? true : false;
-document.getElementById("first").disabled = currentPage == 1 ? true : false;
-document.getElementById("last").disabled = currentPage == numberOfPages ? true : false;
-}
+    const result = await fetch("https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/allBooks")
+      .then(data => { return data.json() })
+      .then( async(res) => {
+        for (a in res.books) {
+          if (res.books[a].includes(bookTitle)) {
+            const suge = await bookSuggest(res.books[a], finalRes)
+            
+          }
+          
+        }
+        return finalRes
+      })
+      for(a in result){
+        renderBook(a)
+      }
+     
+    return finalRes;
+  }
+  suggestBookForm.bookName.value = ""
+});
 
-function load() {
-  loadList();
-}
+
+
+async function bookSuggest(name, finalRes) {
+
+  var url = "https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/getIdFromTitle" + "/" + name;
   
-window.onload = load;
+  const result = await fetch(url)
+    .then(data => { return data.json() })
+    .then( async (id) => {
+      url = "https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/suggestUsingCloseness" + "/" + id;
+      
+      const result2 = await fetch(url)
+        .then(data => { return data.json() })
+        .then( async (suggest) => {
+
+          books = suggest[id].split(" ").join("-")
+          url = "https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/getTitleFromId" + "/" + books;
+          const result3 = await fetch(url)
+            .then(data => { return data.json() })
+            .then(res => {
+              for (key in res) {
+                finalRes[res[key]] = 1
+              }
+              return finalRes;
+            });
+            return finalRes;
+        });
+        return finalRes;
+        
+    });
+    
+  return finalRes
+}
+
+
+function renderBook(book) {
+  let li = document.createElement('li');
+  let name = document.createElement('span');
+  li.setAttribute('book-id', book);
+  name.textContent = book;
+  li.appendChild(name);
+  basicList.appendChild(li);
+}
+
+function renderWordSearch(res, occu) {
+  let li = document.createElement('li');
+  let name = document.createElement('span');
+
+  li.setAttribute('search-id', res);
+  name.textContent = res + " : " + occu;
+  li.appendChild(name);
+  basicList.appendChild(li);
+}
+

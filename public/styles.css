@@ -1,2 +1,63 @@
+html, body {
+    height: 100%;
+    width: 80%;
+}
 
-  
+html {
+    display: table;
+    margin: auto;
+    padding-top: 5%;
+}
+
+body{
+    align-items: center;
+    background-color:firebrick;
+    text-align:center;
+    margin: 0;
+    display: table-cell;
+}
+
+.container{
+    
+display: inline-flexbox;
+margin: -20px;
+padding: 0;
+
+}
+
+.displayer{
+    background-color:#d83131;
+    display: inline-flexbox;
+    margin-top: 5%;
+    padding: 0;
+    
+    }
+
+.searchBar{
+    float: top;
+    margin: -15px;
+}
+
+
+.searchButton{
+    
+    padding: 8px 12px;
+    width: 27%;
+    margin: 0;
+    
+    display: inline-block;
+    border-radius: 0;
+    -webkit-appearance: none;
+}
+
+
+input, textarea {
+    padding: 8px 12px;
+    border: 1px solid black;
+    margin: 0;
+    width: 50%;
+    display: inline-block;
+    border-radius: 0;
+    -webkit-appearance: none;
+}
+

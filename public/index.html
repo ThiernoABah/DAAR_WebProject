@@ -1,49 +1,62 @@
 <html>
-    <head>
-        <!-- The core Firebase JS SDK is always required and must be listed first -->
-        <link rel="stylesheet" href="styles.css">
-    </head>
 
-    <body>
-      <div class="content" id="all-books-content">
-          <button type="button" name="all-books" onclick="getAllBooks()" >Get all books</button>
-          <div class="content">
-              <ul id="books-list"></ul>
-          </div>
-      </div>
+<head>
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <link rel="stylesheet" href="styles.css">
+</head>
 
-      <div class="content" id="book-content">
-          <form id="get-book">
-              <input type="text" name = "name" placeholder="book name">
-              <button>Get book</button>
-          </form>
-          
-          <div>
-              <input type="button" id="first" onclick="firstPage()" value="first" />
-              <input type="button" id="next" onclick="nextPage()" value="next" />
-              <input type="button" id="previous" onclick="previousPage()" value="previous" />
-              <input type="button" id="last" onclick="lastPage()" value="last" />
-          
-              <div id="word-list"></div>
-          </div>
+<body>
+    <h1>Prismaticos</h1>
+    <div class="container">
+        <div class="searchBar" id="search-word">
+            <form id="search-word-form">
+                <input type="text" name="searchWord" placeholder="enter word">
+                <button class="searchButton">Search</button>
+            </form>
+        </div>
 
-      </div>
-      <script src="https://www.gstatic.com/firebasejs/7.5.0/firebase-app.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/7.5.0/firebase-auth.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/7.5.0/firebase-firestore.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/7.5.0/firebase-functions.js"></script>
-        <script>
-          var firebaseConfig = {
-              apiKey: "AIzaSyDv8TK258MSXrDnrdHyDxZDXzQtqpxa1JY",
-              authDomain: "prismaticos-ebe3f.firebaseapp.com",
-              databaseURL: "https://prismaticos-ebe3f.firebaseio.com",
-              projectId: "prismaticos-ebe3f",
-              storageBucket: "prismaticos-ebe3f.appspot.com",
-              messagingSenderId: "399075689137",
-              appId: "1:399075689137:web:fde803912e711114665890",
-              measurementId: "G-21YCQT4YK3"
-          };
-        </script>
-      <script src="app.js"></script>
-    </body>
+        <div class="searchBar" id="search-book">
+            <form id="search-book-form">
+                <input type="text" name="bookName" placeholder="enter book title">
+                <button class="searchButton">Search</button>
+            </form>
+        </div>
+
+        <div class="searchBar" id="suggest-book">
+            <form id="suggest-book-form">
+                <input type="text" name="bookName" placeholder="enter book title">
+                <button class="searchButton">Suggest</button>
+            </form>
+        </div>
+
+    </div>
+    <div class="displayer">
+        <div class="display">
+            <ul id="basic-display"></ul>
+        </div>
+
+        <div class="display">
+            <ul id="suggest-display"></ul>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/7.6.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.6.2/firebase-functions.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.6.2/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.6.2/firebase-firestore.js"></script>
+    <script>
+        var firebaseConfig = {
+            apiKey: "AIzaSyDv8TK258MSXrDnrdHyDxZDXzQtqpxa1JY",
+            authDomain: "prismaticos-ebe3f.firebaseapp.com",
+            databaseURL: "https://prismaticos-ebe3f.firebaseio.com",
+            projectId: "prismaticos-ebe3f",
+            storageBucket: "prismaticos-ebe3f.appspot.com",
+            messagingSenderId: "399075689137",
+            appId: "1:399075689137:web:fde803912e711114665890",
+            measurementId: "G-21YCQT4YK3"
+        };
+    </script>
+    <script src="app.js"></script>
+</body>
+
 </html>
