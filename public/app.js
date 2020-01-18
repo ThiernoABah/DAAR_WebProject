@@ -82,7 +82,7 @@ suggestBookForm.addEventListener('submit', async(e) => {
         return finalRes
       })
       for(a in result){
-        renderBook(a)
+        renderBook(a.split("_").join(" "))
       }
      
     return finalRes;

@@ -156,23 +156,16 @@ exports.allBooks = functions
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
   .https.onRequest((req, res) => {
     res.set('Access-Control-Allow-Origin', '*');
-    var msg = {};
-    i = 1;
-    db.collection('livres').get().then(querySnapshot => {
 
-      // for (var i = 0, keys = Object.keys(querySnapshot); i < keys.length; i++) {
-      //   msg[i] = keys[i];
-      // }
+    db.collection('graphe').get().then(querySnapshot => {
       querySnapshot.forEach(doc => {
-        msg[i] = doc.id;
-        i = i + 1;
+        return res.send({ books: doc.data() });
       });
 
-      return res.send({ books: msg });
+      return res.send("none");
     })
       .catch(error => {
         console.log(error)
-
         res.status(500).send(error)
       });
 
