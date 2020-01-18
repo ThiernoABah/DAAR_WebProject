@@ -157,12 +157,8 @@ exports.allBooks = functions
   .https.onRequest((req, res) => {
     res.set('Access-Control-Allow-Origin', '*');
 
-    db.collection('graphe').get().then(querySnapshot => {
-      querySnapshot.forEach(doc => {
+    db.collection('graphe').doc("id_node.txt").get().then(doc => {
         return res.send({ books: doc.data() });
-      });
-
-      return res.send("none");
     })
       .catch(error => {
         console.log(error)
