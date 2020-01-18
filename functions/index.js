@@ -110,6 +110,24 @@ exports.storageTreat = functions
       });
       await db.collection('suggest').doc(object.name).set(data)
     }
+    else if (object.name === "suggest_jaccard.txt") {
+      lines = fs.readFileSync(tempFilePath).toString().split("\n");
+      lines.forEach(line => {
+        var tmpMots = line.split(" ");
+        var node = tmpMots[0]
+        if (node !== "") {
+          for (i = 1; i < tmpMots.length; i++) {
+            if (data.hasOwnProperty(node)) {
+              data[node] = data[node] + " " + tmpMots[i]
+            }
+            else {
+              data[node] = tmpMots[i]
+            }
+          }
+        }
+      });
+      await db.collection('suggest').doc(object.name).set(data)
+    }
     else {
       lines = fs.readFileSync(tempFilePath).toString().split("\n");
       lines.forEach(line => {
@@ -141,6 +159,10 @@ exports.allBooks = functions
     var msg = {};
     i = 1;
     db.collection('livres').get().then(querySnapshot => {
+
+      // for (var i = 0, keys = Object.keys(querySnapshot); i < keys.length; i++) {
+      //   msg[i] = keys[i];
+      // }
       querySnapshot.forEach(doc => {
         msg[i] = doc.id;
         i = i + 1;
@@ -182,8 +204,6 @@ exports.deleteBook = functions
   .region('europe-west2')
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
   .https.onRequest((req, res) => {
-    res.set('Access-Control-Allow-Origin', '*');
-
     var book = req.path.replace("/", "");
 
     db.collection('livres').doc(book).delete();
@@ -191,6 +211,23 @@ exports.deleteBook = functions
     return res.send(book + "deleted");
 
   });
+
+exports.deleteAllBook = functions
+  .region('europe-west2')
+  .runWith({ memory: "1GB", timeoutSeconds: 540 })
+  .https.onRequest((req, res) => {
+
+    db.collection('livres').get().then(querySnapshot => {
+      querySnapshot.forEach(doc => {
+        db.collection('livres').doc(doc.id).delete();
+      });
+      return res.send("all book deleted");
+    }).catch(error => {
+      console.log(error)
+      res.status(500).send(error)
+    });
+  });
+
 
 exports.search = functions
   .region('europe-west2')
@@ -205,10 +242,10 @@ exports.search = functions
     db.collection('livres').get().then(querySnapshot => {
       querySnapshot.forEach(book => {
         d = book.data()
-        if(d[word] !== undefined){
+        if (d[word] !== undefined) {
           r[book.id] = d[word]
         }
-        
+
       });
 
       var arr = sortSearchResult(r);
@@ -267,6 +304,30 @@ exports.suggestUsingPagerank = functions
       });
   });
 
+exports.suggestUsingJaccard = functions
+  .region('europe-west2')
+  .runWith({ memory: "1GB", timeoutSeconds: 540 })
+  .https.onRequest((req, res) => {
+
+    res.set('Access-Control-Allow-Origin', '*');
+
+    r = {}
+    var book = req.path.replace("/", "");
+    db.collection('suggest').doc("suggest_jaccard.txt").get().then(doc => {
+      if (doc.exists) {
+        r[book] = doc.data()[book];
+      } else {
+        console.log("No such document!");
+      }
+
+      return res.send(r);
+    })
+      .catch(error => {
+        console.log(error)
+        res.status(500).send(error)
+      });
+  });
+
 exports.getTitleFromId = functions
   .region('europe-west2')
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
@@ -280,7 +341,7 @@ exports.getTitleFromId = functions
     var ids = request.split("-");
 
     db.collection('graphe').doc("id_node.txt").get().then(doc => {
-      
+
       ids.forEach(id => {
         if (doc.exists) {
           if (id !== "") {
@@ -334,10 +395,10 @@ function sortSearchResult(obj) {
   var prop;
   for (prop in obj) {
     if (obj.hasOwnProperty(prop)) {
-        arr.push({
-          'book': prop,
-          'occurence': obj[prop]
-        });
+      arr.push({
+        'book': prop,
+        'occurence': obj[prop]
+      });
     }
   }
   arr.sort(function (a, b) {

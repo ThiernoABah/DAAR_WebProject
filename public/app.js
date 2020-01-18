@@ -143,4 +143,3 @@ function renderWordSearch(res, occu) {
   li.appendChild(name);
   basicList.appendChild(li);
 }
-
