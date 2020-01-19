@@ -2,34 +2,39 @@ firebase.initializeApp(firebaseConfig);
 
 const db = firebase.firestore();
 
+
 const searchWordForm = document.querySelector('#search-word-form');
 const searchBookForm = document.querySelector('#search-book-form');
 const suggestBookForm = document.querySelector('#suggest-book-form');
 
 const basicList = document.querySelector('#basic-display');
-const suggestList = document.querySelector('#suggest-display');
+displayText = document.getElementById('display_text')
+
 
 
 // Search a book
 searchBookForm.addEventListener('submit', (e) => {
   e.preventDefault();
- bookTitle = searchBookForm.bookName.value
+ bookTitle = searchBookForm.bookName.value.split(" ").join("_")
   if ( bookTitle.length< 3) {
     alert("your entrie is too short, enter at least 3 character");
   }
   else {
     document.getElementById("basic-display").innerHTML = "";
+    displayText.textContent = ""
+
     fetch("https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/allBooks")
       .then(data => { return data.json() })
       .then(res => {
         for (a in res.books) {
           if (res.books[a].includes(bookTitle)) {
-            renderBook(res.books[a])
+            renderBook(res.books[a].split("_").join(" "))
           }
         }
       })
   }
   searchBookForm.bookName.value = ""
+  
   
 
 });
@@ -42,24 +47,26 @@ searchWordForm.addEventListener('submit', (e) => {
 
   word = searchWordForm.searchWord.value
   document.getElementById("basic-display").innerHTML = "";
+  displayText.textContent = ""
 
   const url = "https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/search" + "/" + word ;
   fetch(url)
     .then(data => { return data.json() })
     .then(res => {
       for (key in res) {
-        renderWordSearch(res[key].book, res[key].occurence);
+        renderWordSearch(key.split("_").join(" "), res[key]);
       }
       
     })
     searchWordForm.searchWord.value = ""
+    
 });
 
 // Book suggestion
 suggestBookForm.addEventListener('submit', async(e) => {
   e.preventDefault();
 
-  bookTitle = suggestBookForm.bookName.value
+  bookTitle = suggestBookForm.bookName.value.split(" ").join("_")
   var finalRes = {}
 
   if (bookTitle.length < 3) {
@@ -68,7 +75,8 @@ suggestBookForm.addEventListener('submit', async(e) => {
   else {
 
     document.getElementById("basic-display").innerHTML = "";
-
+    displayText.textContent = ""
+    
     const result = await fetch("https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/allBooks")
       .then(data => { return data.json() })
       .then( async(res) => {
@@ -128,7 +136,10 @@ async function bookSuggest(name, finalRes) {
 function renderBook(book) {
   let li = document.createElement('li');
   let name = document.createElement('span');
+
   li.setAttribute('book-id', book);
+  li.setAttribute('onclick','displayBook("'+book.split(" ").join("_")+'")');
+  
   name.textContent = book;
   li.appendChild(name);
   basicList.appendChild(li);
@@ -139,7 +150,30 @@ function renderWordSearch(res, occu) {
   let name = document.createElement('span');
 
   li.setAttribute('search-id', res);
+  li.setAttribute('onclick','displayBook("'+book.split(" ").join("_")+'")');
+  
   name.textContent = res + " : " + occu;
   li.appendChild(name);
   basicList.appendChild(li);
+}
+
+function displayBook(book){
+  const url = "https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/getBook" + "/" + book ;
+  fetch(url)
+    .then(data => { return data.json() })
+    .then(res => {
+        renderBookContent(res.book);
+    })
+}
+
+function renderBookContent(bookContent){
+  
+  displayText.setAttribute('style', 'white-space: pre;');
+  displayText.textContent = ""
+  text = bookContent.split("\n")
+
+  for (line in text){
+    displayText.textContent += text[line] + "\r\n"
+  }
+  
 }

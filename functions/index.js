@@ -155,37 +155,50 @@ exports.allBooks = functions
   .region('europe-west2')
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
   .https.onRequest((req, res) => {
-    res.set('Access-Control-Allow-Origin', '*');
+    
 
     db.collection('graphe').doc("id_node.txt").get().then(doc => {
+      res.set('Access-Control-Allow-Origin', '*');
         return res.send({ books: doc.data() });
-    })
+    } )
       .catch(error => {
         console.log(error)
         res.status(500).send(error)
       });
 
 
-  });
+  }
+  );
 
+  // a changer de facon a retourner le texte du livre
 exports.getBook = functions
   .region('europe-west2')
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
   .https.onRequest((req, res) => {
-    res.set('Access-Control-Allow-Origin', '*');
+    
     var book = req.path.replace("/", "");
+    
+    admin.storage().bucket().file(book).download().then(function(data) {
+      res.set('Access-Control-Allow-Origin', '*');
+      return res.send({book : data.toString()});
+    }).catch(error => {
+          console.log(error)
+  
+          res.status(500).send(error)
+        })
+  
 
-    db.collection('livres').doc(book).get().then(snapshot => {
-      const d = snapshot.data()
+    // db.collection('livres').doc(book).get().then(snapshot => {
+    //   const d = snapshot.data()
+    //   res.set('Access-Control-Allow-Origin', '*');
+    //   return res.send(d)
 
-      return res.send(d)
+    // })
+    //   .catch(error => {
+    //     console.log(error)
 
-    })
-      .catch(error => {
-        console.log(error)
-
-        res.status(500).send(error)
-      })
+    //     res.status(500).send(error)
+    //   })
 
   });
 
@@ -222,35 +235,30 @@ exports.search = functions
   .region('europe-west2')
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
   .https.onRequest((req, res) => {
-
-    res.set('Access-Control-Allow-Origin', '*');
-
     r = {}
     var word = req.path.replace("/", "");
 
-    db.collection('livres').get().then(querySnapshot => {
+    db.collection('livres').orderBy(word,'desc').limit(10)
+    .get().then(querySnapshot => {
       querySnapshot.forEach(book => {
-        d = book.data()
-        if (d[word] !== undefined) {
-          r[book.id] = d[word]
+        if (book.data()[word] !== undefined) {
+          r[book.id] = book.data()[word]
         }
-
       });
-
-      var arr = sortSearchResult(r);
-      return res.send(arr);
-    })
-      .catch(error => {
+      res.set('Access-Control-Allow-Origin', '*');
+      return res.send(r);
+    }).catch(error => {
         console.log(error)
         res.status(500).send(error)
       });
   });
 
+
 exports.suggestUsingCloseness = functions
   .region('europe-west2')
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
   .https.onRequest((req, res) => {
-    res.set('Access-Control-Allow-Origin', '*');
+    
 
     r = {}
     var book = req.path.replace("/", "");
@@ -260,7 +268,7 @@ exports.suggestUsingCloseness = functions
       } else {
         console.log("No such document!");
       }
-
+      res.set('Access-Control-Allow-Origin', '*');
       return res.send(r);
     })
       .catch(error => {
@@ -274,7 +282,7 @@ exports.suggestUsingPagerank = functions
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
   .https.onRequest((req, res) => {
 
-    res.set('Access-Control-Allow-Origin', '*');
+    
 
     r = {}
     var book = req.path.replace("/", "");
@@ -284,7 +292,7 @@ exports.suggestUsingPagerank = functions
       } else {
         console.log("No such document!");
       }
-
+      res.set('Access-Control-Allow-Origin', '*');
       return res.send(r);
     })
       .catch(error => {
@@ -298,8 +306,7 @@ exports.suggestUsingJaccard = functions
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
   .https.onRequest((req, res) => {
 
-    res.set('Access-Control-Allow-Origin', '*');
-
+    
     r = {}
     var book = req.path.replace("/", "");
     db.collection('suggest').doc("suggest_jaccard.txt").get().then(doc => {
@@ -308,7 +315,7 @@ exports.suggestUsingJaccard = functions
       } else {
         console.log("No such document!");
       }
-
+      res.set('Access-Control-Allow-Origin', '*');
       return res.send(r);
     })
       .catch(error => {
@@ -322,7 +329,7 @@ exports.getTitleFromId = functions
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
   .https.onRequest((req, res) => {
 
-    res.set('Access-Control-Allow-Origin', '*');
+    
     r = {}
 
     var request = req.path.replace("/", "");
@@ -341,6 +348,7 @@ exports.getTitleFromId = functions
           console.log("No such document!");
         }
       })
+      res.set('Access-Control-Allow-Origin', '*');
       return res.send(r);
     })
       .catch(error => {
@@ -357,12 +365,13 @@ exports.getIdFromTitle = functions
 
     r = {}
     var request = req.path.replace("/", "");
-    res.set('Access-Control-Allow-Origin', '*');
+    
     db.collection('graphe').doc("id_node.txt").get().then(doc => {
       if (doc.exists) {
         entries = Object.entries(doc.data())
         for (const [id, title] of entries) {
           if (title === request) {
+            res.set('Access-Control-Allow-Origin', '*');
             return res.send(id);
           }
         }
@@ -370,6 +379,7 @@ exports.getIdFromTitle = functions
       } else {
         console.log("No such document!");
       }
+      res.set('Access-Control-Allow-Origin', '*');
       return res.send(r);
     })
       .catch(error => {
@@ -379,25 +389,25 @@ exports.getIdFromTitle = functions
 
   });
 
-function sortSearchResult(obj) {
-  var arr = [];
-  var prop;
-  for (prop in obj) {
-    if (obj.hasOwnProperty(prop)) {
-      arr.push({
-        'book': prop,
-        'occurence': obj[prop]
-      });
-    }
-  }
-  arr.sort(function (a, b) {
-    if (a.occurence - b.occurence > 0) {
-      return -1;
-    }
-    else if (a.occurence - b.occurence < 0) {
-      return 1
-    }
-    return 0;
-  });
-  return arr; // returns array
-}
+// function sortSearchResult(obj) {
+//   var arr = [];
+//   var prop;
+//   for (prop in obj) {
+//     if (obj.hasOwnProperty(prop)) {
+//       arr.push({
+//         'book': prop,
+//         'occurence': obj[prop]
+//       });
+//     }
+//   }
+//   arr.sort(function (a, b) {
+//     if (a.occurence - b.occurence > 0) {
+//       return -1;
+//     }
+//     else if (a.occurence - b.occurence < 0) {
+//       return 1
+//     }
+//     return 0;
+//   });
+//   return arr; // returns array
+// }
