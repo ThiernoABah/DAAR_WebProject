@@ -83,7 +83,6 @@ suggestBookForm.addEventListener('submit', async(e) => {
         for (a in res.books) {
           if (res.books[a].includes(bookTitle)) {
             const suge = await bookSuggest(res.books[a], finalRes)
-            
           }
           
         }
@@ -101,7 +100,6 @@ suggestBookForm.addEventListener('submit', async(e) => {
 
 
 async function bookSuggest(name, finalRes) {
-
   var url = "https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/getIdFromTitle" + "/" + name;
   
   const result = await fetch(url)
@@ -125,8 +123,7 @@ async function bookSuggest(name, finalRes) {
             });
             return finalRes;
         });
-        return finalRes;
-        
+        return finalRes;     
     });
     
   return finalRes
@@ -150,7 +147,7 @@ function renderWordSearch(res, occu) {
   let name = document.createElement('span');
 
   li.setAttribute('search-id', res);
-  li.setAttribute('onclick','displayBook("'+book.split(" ").join("_")+'")');
+  li.setAttribute('onclick','displayBook("'+res.split(" ").join("_")+'")');
   
   name.textContent = res + " : " + occu;
   li.appendChild(name);

@@ -163,6 +163,7 @@ exports.allBooks = functions
     } )
       .catch(error => {
         console.log(error)
+        res.set('Access-Control-Allow-Origin', '*');
         res.status(500).send(error)
       });
 
@@ -180,25 +181,12 @@ exports.getBook = functions
     
     admin.storage().bucket().file(book).download().then(function(data) {
       res.set('Access-Control-Allow-Origin', '*');
-      return res.send({book : data.toString()});
+      return res.send(data);
     }).catch(error => {
           console.log(error)
-  
+          res.set('Access-Control-Allow-Origin', '*');
           res.status(500).send(error)
         })
-  
-
-    // db.collection('livres').doc(book).get().then(snapshot => {
-    //   const d = snapshot.data()
-    //   res.set('Access-Control-Allow-Origin', '*');
-    //   return res.send(d)
-
-    // })
-    //   .catch(error => {
-    //     console.log(error)
-
-    //     res.status(500).send(error)
-    //   })
 
   });
 
@@ -209,7 +197,6 @@ exports.deleteBook = functions
     var book = req.path.replace("/", "");
 
     db.collection('livres').doc(book).delete();
-
     return res.send(book + "deleted");
 
   });
@@ -249,6 +236,7 @@ exports.search = functions
       return res.send(r);
     }).catch(error => {
         console.log(error)
+        res.set('Access-Control-Allow-Origin', '*');
         res.status(500).send(error)
       });
   });
@@ -261,18 +249,25 @@ exports.suggestUsingCloseness = functions
     
 
     r = {}
-    var book = req.path.replace("/", "");
+    var books = req.path.replace("/", "");
+    var ids = books.split("-");
+
     db.collection('suggest').doc("suggest_closeness.txt").get().then(doc => {
       if (doc.exists) {
-        r[book] = doc.data()[book];
-      } else {
+        ids.forEach(id => {
+          r[id] = doc.data()[id];
+      });
+      }
+      else {
         console.log("No such document!");
       }
+      
       res.set('Access-Control-Allow-Origin', '*');
       return res.send(r);
     })
       .catch(error => {
         console.log(error)
+        res.set('Access-Control-Allow-Origin', '*');
         res.status(500).send(error)
       });
   });
@@ -282,21 +277,26 @@ exports.suggestUsingPagerank = functions
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
   .https.onRequest((req, res) => {
 
-    
-
     r = {}
-    var book = req.path.replace("/", "");
+    var books = req.path.replace("/", "");
+    var ids = books.split("-");
+
     db.collection('suggest').doc("suggest_pagerank.txt").get().then(doc => {
       if (doc.exists) {
-        r[book] = doc.data()[book];
-      } else {
+        ids.forEach(id => {
+          r[id] = doc.data()[id];
+      });
+      }
+      else {
         console.log("No such document!");
       }
+      
       res.set('Access-Control-Allow-Origin', '*');
       return res.send(r);
     })
       .catch(error => {
         console.log(error)
+        res.set('Access-Control-Allow-Origin', '*');
         res.status(500).send(error)
       });
   });
@@ -308,18 +308,24 @@ exports.suggestUsingJaccard = functions
 
     
     r = {}
-    var book = req.path.replace("/", "");
+    var books = req.path.replace("/", "");
+    var ids = books.split("-");
     db.collection('suggest').doc("suggest_jaccard.txt").get().then(doc => {
       if (doc.exists) {
-        r[book] = doc.data()[book];
-      } else {
+        ids.forEach(id => {
+          r[id] = doc.data()[id];
+      });
+      }
+      else {
         console.log("No such document!");
       }
+      
       res.set('Access-Control-Allow-Origin', '*');
       return res.send(r);
     })
       .catch(error => {
         console.log(error)
+        res.set('Access-Control-Allow-Origin', '*');
         res.status(500).send(error)
       });
   });
@@ -353,6 +359,7 @@ exports.getTitleFromId = functions
     })
       .catch(error => {
         console.log(error)
+        res.set('Access-Control-Allow-Origin', '*');
         res.status(500).send(error)
       });
 
@@ -384,30 +391,8 @@ exports.getIdFromTitle = functions
     })
       .catch(error => {
         console.log(error)
+        res.set('Access-Control-Allow-Origin', '*');
         res.status(500).send(error)
       });
 
   });
-
-// function sortSearchResult(obj) {
-//   var arr = [];
-//   var prop;
-//   for (prop in obj) {
-//     if (obj.hasOwnProperty(prop)) {
-//       arr.push({
-//         'book': prop,
-//         'occurence': obj[prop]
-//       });
-//     }
-//   }
-//   arr.sort(function (a, b) {
-//     if (a.occurence - b.occurence > 0) {
-//       return -1;
-//     }
-//     else if (a.occurence - b.occurence < 0) {
-//       return 1
-//     }
-//     return 0;
-//   });
-//   return arr; // returns array
-// }
