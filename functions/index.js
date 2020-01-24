@@ -156,7 +156,7 @@ exports.allBooks = functions
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
   .https.onRequest((req, res) => {
     
-
+    
     db.collection('graphe').doc("id_node.txt").get().then(doc => {
       res.set('Access-Control-Allow-Origin', '*');
         return res.send({ books: doc.data() });
@@ -171,7 +171,6 @@ exports.allBooks = functions
   }
   );
 
-  // a changer de facon a retourner le texte du livre
 exports.getBook = functions
   .region('europe-west2')
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
@@ -179,9 +178,9 @@ exports.getBook = functions
     
     var book = req.path.replace("/", "");
     
-    admin.storage().bucket().file(book).download().then(function(data) {
+    admin.storage().bucket().file(book).download().then(data => {
       res.set('Access-Control-Allow-Origin', '*');
-      return res.send(data);
+      return res.send({book : data.toString()});
     }).catch(error => {
           console.log(error)
           res.set('Access-Control-Allow-Origin', '*');
@@ -201,6 +200,7 @@ exports.deleteBook = functions
 
   });
 
+  
 exports.deleteAllBook = functions
   .region('europe-west2')
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
@@ -241,94 +241,83 @@ exports.search = functions
       });
   });
 
-
-exports.suggestUsingCloseness = functions
+  exports.searchBook = functions
   .region('europe-west2')
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
   .https.onRequest((req, res) => {
+
+    var r = {}
+    var book = req.path.replace("/", "");
+
+    db.collection('graphe').doc("id_node.txt").get().then(doc => {
+      data = doc.data();
+      for (a in data) {
+        if (data[a].toLowerCase().includes(book.toLowerCase())) {
+          r[a] = data[a];
+        }
+      }
+      res.set('Access-Control-Allow-Origin', '*');
+      return res.send(r);
+    } )
+      .catch(error => {
+        console.log(error)
+        res.set('Access-Control-Allow-Origin', '*');
+        res.status(500).send(error)
+      });
+
+  });
+
+  function regExTransform(book){
+    const reg = book.split("accOuv").join("{");
+    const reg1 = reg.split("accFer").join("}");
+    const reg2 = reg1.split("anti").join("\\");
+    const reg3 = reg2.split("slash").join("/");
+    const reg4 = reg3.split("space").join("_");
+    const reg5 = reg4.split("hat").join("^");
+    return reg5;
+  }
+
+  exports.searchBookRegEx = functions
+  .region('europe-west2')
+  .runWith({ memory: "1GB", timeoutSeconds: 540 })
+  .https.onRequest((req, res) => {
+
+    var r = {}
+    var book = req.path.replace("/", "");
     
+    if(book === ".*"){
+      db.collection('graphe').doc("id_node.txt").get().then(doc => {
+        res.set('Access-Control-Allow-Origin', '*');
+          return res.send(doc.data());
+      } )
+        .catch(error => {
+          console.log(error)
+          res.set('Access-Control-Allow-Origin', '*');
+          res.status(500).send(error)
+        });
+    }
 
-    r = {}
-    var books = req.path.replace("/", "");
-    var ids = books.split("-");
-
-    db.collection('suggest').doc("suggest_closeness.txt").get().then(doc => {
-      if (doc.exists) {
-        ids.forEach(id => {
-          r[id] = doc.data()[id];
-      });
+    var regTransformed = regExTransform(book)
+    var re = new RegExp(regTransformed);
+    console.log("regex : "+ re)
+    db.collection('graphe').doc("id_node.txt").get().then(doc => {
+      data = doc.data();
+      for (a in data) {
+        if (data[a].search(re) !== -1) {
+          r[a] = data[a];
+        }
       }
-      else {
-        console.log("No such document!");
-      }
-      
       res.set('Access-Control-Allow-Origin', '*');
       return res.send(r);
-    })
+    } )
       .catch(error => {
         console.log(error)
         res.set('Access-Control-Allow-Origin', '*');
         res.status(500).send(error)
       });
+
   });
 
-exports.suggestUsingPagerank = functions
-  .region('europe-west2')
-  .runWith({ memory: "1GB", timeoutSeconds: 540 })
-  .https.onRequest((req, res) => {
-
-    r = {}
-    var books = req.path.replace("/", "");
-    var ids = books.split("-");
-
-    db.collection('suggest').doc("suggest_pagerank.txt").get().then(doc => {
-      if (doc.exists) {
-        ids.forEach(id => {
-          r[id] = doc.data()[id];
-      });
-      }
-      else {
-        console.log("No such document!");
-      }
-      
-      res.set('Access-Control-Allow-Origin', '*');
-      return res.send(r);
-    })
-      .catch(error => {
-        console.log(error)
-        res.set('Access-Control-Allow-Origin', '*');
-        res.status(500).send(error)
-      });
-  });
-
-exports.suggestUsingJaccard = functions
-  .region('europe-west2')
-  .runWith({ memory: "1GB", timeoutSeconds: 540 })
-  .https.onRequest((req, res) => {
-
-    
-    r = {}
-    var books = req.path.replace("/", "");
-    var ids = books.split("-");
-    db.collection('suggest').doc("suggest_jaccard.txt").get().then(doc => {
-      if (doc.exists) {
-        ids.forEach(id => {
-          r[id] = doc.data()[id];
-      });
-      }
-      else {
-        console.log("No such document!");
-      }
-      
-      res.set('Access-Control-Allow-Origin', '*');
-      return res.send(r);
-    })
-      .catch(error => {
-        console.log(error)
-        res.set('Access-Control-Allow-Origin', '*');
-        res.status(500).send(error)
-      });
-  });
 
 exports.getTitleFromId = functions
   .region('europe-west2')
@@ -395,4 +384,98 @@ exports.getIdFromTitle = functions
         res.status(500).send(error)
       });
 
+  });
+
+
+  exports.suggestUsingJaccard = functions
+  .region('europe-west2')
+  .runWith({ memory: "1GB", timeoutSeconds: 540 })
+  .https.onRequest(async(req, res) => {
+
+    potentialBooks = {}
+    suggestions = {}
+
+    var book = req.path.replace("/", "");
+    
+    var allBooks  = await (await db.collection('graphe').doc("id_node.txt").get()).data();
+    
+    for (a in allBooks) {
+      if (allBooks[a].toLowerCase().includes(book.toLowerCase())) {
+        potentialBooks[a] = allBooks[a];
+      }
+    }
+
+    var jaccardScore  = await (await db.collection('suggest').doc("suggest_jaccard.txt").get()).data();
+
+    for(id in potentialBooks){
+      neigbors = jaccardScore[id].split(" ")
+      for( n in neigbors){
+        suggestions[neigbors[n]] = allBooks[neigbors[n]]
+      }
+    }
+
+      res.set('Access-Control-Allow-Origin', '*');
+      res.send(suggestions)
+  });
+
+  exports.suggestUsingCloseness = functions
+  .region('europe-west2')
+  .runWith({ memory: "1GB", timeoutSeconds: 540 })
+  .https.onRequest(async(req, res) => {
+
+    potentialBooks = {}
+    suggestions = {}
+
+    var book = req.path.replace("/", "");
+    
+    var allBooks  = await (await db.collection('graphe').doc("id_node.txt").get()).data();
+    
+    for (a in allBooks) {
+      if (allBooks[a].toLowerCase().includes(book.toLowerCase())) {
+        potentialBooks[a] = allBooks[a];
+      }
+    }
+
+    var closenessScore  = await (await db.collection('suggest').doc("suggest_closeness.txt").get()).data();
+
+    for(id in potentialBooks){
+      neigbors = closenessScore[id].split(" ")
+      for( n in neigbors){
+        suggestions[neigbors[n]] = allBooks[neigbors[n]]
+      }
+    }
+
+      res.set('Access-Control-Allow-Origin', '*');
+      res.send(suggestions)
+  });
+
+  exports.suggestUsingPagerank = functions
+  .region('europe-west2')
+  .runWith({ memory: "1GB", timeoutSeconds: 540 })
+  .https.onRequest(async(req, res) => {
+
+    potentialBooks = {}
+    suggestions = {}
+
+    var book = req.path.replace("/", "");
+    
+    var allBooks  = await (await db.collection('graphe').doc("id_node.txt").get()).data();
+    
+    for (a in allBooks) {
+      if (allBooks[a].toLowerCase().includes(book.toLowerCase())) {
+        potentialBooks[a] = allBooks[a];
+      }
+    }
+
+    var pagerank  = await (await db.collection('suggest').doc("suggest_pagerank.txt").get()).data();
+
+    for(id in potentialBooks){
+      neigbors = pagerank[id].split(" ")
+      for( n in neigbors){
+        suggestions[neigbors[n]] = allBooks[neigbors[n]]
+      }
+    }
+
+      res.set('Access-Control-Allow-Origin', '*');
+      res.send(suggestions)
   });

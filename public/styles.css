@@ -11,7 +11,7 @@ html {
 
 body{
     align-items: center;
-    background-color:firebrick;
+    background-color:#d0cef2de;
     text-align:center;
     margin: 0;
     display: table-cell;
@@ -26,7 +26,7 @@ padding: 0;
 }
 
 .displayer{
-    background-color:#d83131;
+    background-color:rgba(255, 255, 255, 0.555);
     display: inline-flexbox;
     margin-top: 5%;
     padding: 0;

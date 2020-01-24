@@ -18,7 +18,14 @@
 
         <div class="searchBar" id="search-book">
             <form id="search-book-form">
-                <input type="text" name="bookName" placeholder="enter book title">
+                <input type="text" name="bookName" placeholder="search book by title">
+                <button class="searchButton">Search</button>
+            </form>
+        </div>
+
+        <div class="searchBar" id="search-bookRegEx">
+            <form id="search-bookRegEx-form">
+                <input type="text" name="bookRegExName" placeholder="search book by regex">
                 <button class="searchButton">Search</button>
             </form>
         </div>
@@ -44,6 +51,7 @@
     <script src="https://www.gstatic.com/firebasejs/7.6.2/firebase-functions.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.6.2/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.6.2/firebase-firestore.js"></script>
+    
     <script>
         var firebaseConfig = {
             apiKey: "AIzaSyDv8TK258MSXrDnrdHyDxZDXzQtqpxa1JY",
