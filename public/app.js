@@ -48,7 +48,7 @@ form.addEventListener('submit', async(e) => {
     if (bookTitle.length >= 3) {
       resultDisplay.innerHTML = "";
       document.querySelector('#spinner').style.display = 'block';
-      await callSuggestBook(bookTitle)
+      await callSearchBook(bookTitle)
     }
 
   }
@@ -131,6 +131,19 @@ async function callSuggestClosenessBook(bookTitle){
 
 async function callSuggestJaccardBook(bookTitle){
   fetch("https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/suggestUsingJaccard/"+bookTitle)
+      .then(data => { return data.json() })
+      .then( res => {
+        document.querySelector('#spinner').style.display = 'none';
+        for(a in res){
+          renderBook(res[a].split("_").join(" "))
+        }
+      })
+}
+
+async function randomBooks(){
+  resultDisplay.innerHTML = "";
+  document.querySelector('#spinner').style.display = 'block';
+  fetch("https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/randomBook")
       .then(data => { return data.json() })
       .then( res => {
         document.querySelector('#spinner').style.display = 'none';

@@ -275,6 +275,31 @@ exports.search = functions
 
   });
 
+    // Function that allows us to get ten random booksk in our database (his title)
+    exports.randomBook = functions
+    .region('europe-west2')
+    .runWith({ memory: "1GB", timeoutSeconds: 540 })
+    .https.onRequest((req, res) => {
+  
+      var r = {}
+      
+  
+      db.collection('graphe').doc("id_node.txt").get().then(doc => {
+        data = doc.data();
+        for (i = 0; i < 10; i++) {
+          r[i] = data[Math.floor(Math.random() * 1664)];
+        }
+        res.set('Access-Control-Allow-Origin', '*');
+        return res.send(r);
+      } )
+        .catch(error => {
+          console.log(error)
+          res.set('Access-Control-Allow-Origin', '*');
+          res.status(500).send(error)
+        });
+  
+    });
+
   // Function used to translate a RegEx from client into a valid one
   function regExTransform(book){
     const reg = book.split("TOKEN_ACCOUV").join("{");
