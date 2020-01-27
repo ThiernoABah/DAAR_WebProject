@@ -8,6 +8,7 @@ const path = require('path');
 const os = require('os');
 const fs = require('fs');
 
+// Put documents in database (firestore) books go to livres collection and file who contain pretreatment data go into the right collection
 exports.storageTreat = functions
   .region('europe-west2')
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
@@ -151,6 +152,7 @@ exports.storageTreat = functions
 
   });
 
+// Function that get the title of all books in the database
 exports.allBooks = functions
   .region('europe-west2')
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
@@ -171,6 +173,7 @@ exports.allBooks = functions
   }
   );
 
+// Function that allows us to download a book that we put in storage
 exports.getBook = functions
   .region('europe-west2')
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
@@ -189,6 +192,8 @@ exports.getBook = functions
 
   });
 
+
+// Functions used to delete a book or all book; those are disabled because we dont want a user to destroy our database
 exports.deleteBook = functions
   .region('europe-west2')
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
@@ -217,8 +222,9 @@ exports.deleteAllBook = functions
       res.status(500).send(error)
     });*/
   });
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
+// Function that allows us to search a word in our database and return the top 15 book in which the word appear the most
 exports.search = functions
   .region('europe-west2')
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
@@ -226,7 +232,7 @@ exports.search = functions
     r = {}
     var word = req.path.replace("/", "").toLowerCase();
 
-    db.collection('livres').orderBy(word,'desc').limit(10)
+    db.collection('livres').orderBy(word,'desc').limit(15)
     .get().then(querySnapshot => {
       querySnapshot.forEach(book => {
         if (book.data()[word] !== undefined) {
@@ -242,6 +248,7 @@ exports.search = functions
       });
   });
 
+  // Function that allows us to search a book in our database (his title)
   exports.searchBook = functions
   .region('europe-west2')
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
@@ -268,6 +275,7 @@ exports.search = functions
 
   });
 
+  // Function used to translate a RegEx from client into a valid one
   function regExTransform(book){
     const reg = book.split("TOKEN_ACCOUV").join("{");
     const reg1 = reg.split("TOKEN_ACCFER").join("}");
@@ -278,6 +286,7 @@ exports.search = functions
     return reg5;
   }
 
+    // Function that allows us to search using a RegEx a book in our database (his title)
   exports.searchBookRegEx = functions
   .region('europe-west2')
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
@@ -320,6 +329,7 @@ exports.search = functions
   });
 
 
+  // Get a book title from a node id in our graph
 exports.getTitleFromId = functions
   .region('europe-west2')
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
@@ -355,6 +365,7 @@ exports.getTitleFromId = functions
 
   });
 
+  // Get a node id from a book title in our graph
 exports.getIdFromTitle = functions
   .region('europe-west2')
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
@@ -387,7 +398,7 @@ exports.getIdFromTitle = functions
 
   });
 
-
+// Functions that get the top 5 closest neighbors of book using jaccard distance
   exports.suggestUsingJaccard = functions
   .region('europe-west2')
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
@@ -419,6 +430,7 @@ exports.getIdFromTitle = functions
       res.send(suggestions)
   });
 
+  // Functions that get the top 5 neighbors of book who have the best closeness score in the graph
   exports.suggestUsingCloseness = functions
   .region('europe-west2')
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
@@ -450,6 +462,7 @@ exports.getIdFromTitle = functions
       res.send(suggestions)
   });
 
+  // Functions that get the top 5 neighbors of book who have the best pagerank score in the graph
   exports.suggestUsingPagerank = functions
   .region('europe-west2')
   .runWith({ memory: "1GB", timeoutSeconds: 540 })

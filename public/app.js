@@ -1,33 +1,36 @@
 firebase.initializeApp(firebaseConfig);
 
-const form = document.querySelector('#form');
-
+form = document.querySelector('#form');
 resultDisplay = document.getElementById('resultDisplay');
 modeDropdown = document.getElementById('btnGroupDrop1')
 
+// By default the search mode is in searchWord
 var mode = "searchWord"
 
+// Change the search mode depending on wich mode the user want to do his research //
 function setSearchinWordgMode(){
   mode = "searchWord"
-  modeDropdown.innerHTML = "Search word mode"
+  modeDropdown.innerHTML = "Search word"
 }
 function setSearchingBookMode(){
   mode = "searchBook"
-  modeDropdown.innerHTML = "Search book by title mode"
+  modeDropdown.innerHTML = "Search book by title"
 }
 function setSearchingBookRegExMode(){
   mode = "searchBookRegEx"
-  modeDropdown.innerHTML = "Search book by RegEx mode"
+  modeDropdown.innerHTML = "Search book by RegEx"
 }
 function setSuggestClosenessMode(){
   mode = "suggestClosenessBook"
-  modeDropdown.innerHTML = "Suggest book by closeness mode"
+  modeDropdown.innerHTML = "Suggest book by Closeness"
 }
 function setSuggestJaccardMode(){
   mode = "suggestJaccardBook"
-  modeDropdown.innerHTML = "Suggest book by Jaccard dist mode"
+  modeDropdown.innerHTML = "Suggest book using Jaccard dist"
 }
+///////////////////////////////////////////////////////////////////////////////////
 
+// Call the right API call depending on the search mode ///////////////////////////
 form.addEventListener('submit', async(e) => {
   e.preventDefault();
 
@@ -72,7 +75,6 @@ form.addEventListener('submit', async(e) => {
       document.querySelector('#spinner').style.display = 'block';
       await callSuggestJaccardBook(bookTitle)
     }
-
   }
   else{
     console.log("unknow research mode : "+ mode)
@@ -81,7 +83,9 @@ form.addEventListener('submit', async(e) => {
   form.searchField.value = ""
   
 });
+///////////////////////////////////////////////////////////////////////////////////
 
+/// Function that make the call to firebase functions to get informations /////////
 async function callSearchWord(word){
   const url = "https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/search" + "/" + word ;
   const result = await (await fetch(url)).json();
@@ -135,7 +139,10 @@ async function callSuggestJaccardBook(bookTitle){
         }
       })
 }
+///////////////////////////////////////////////////////////////////////////////////
 
+//// Funtions that change the RegEx into a valid one that we can pass to a url ////
+//// The server can translate it back to the RegEx the user has enter /////////////
 function regExTransform(book){
   const reg = book.split("{").join("TOKEN_ACCOUV");
   const reg1 = reg.split("}").join("TOKEN_ACCFER");
@@ -146,7 +153,7 @@ function regExTransform(book){
   return reg5
 }
 
-
+//// Functions in charge of displaying the result of functions call //////////////
 function renderBook(book) {
   let div = document.createElement('div');
   let li = document.createElement('li');
@@ -160,8 +167,6 @@ function renderBook(book) {
   a.innerHTML = "Download book"
 
   div.setAttribute('class', 'd-flex list-group list-group-horizontal');
-
-
   li.appendChild(a)
   div.appendChild(li)  
   
@@ -186,8 +191,6 @@ function renderWordSearch(word, res, occu) {
   a.innerHTML = "Download book"
 
   div.setAttribute('class', 'd-flex list-group list-group-horizontal');
-
-  
   li.appendChild(span)
   li.appendChild(a)
   div.appendChild(li)
