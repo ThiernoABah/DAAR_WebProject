@@ -1,167 +1,168 @@
 firebase.initializeApp(firebaseConfig);
 
-const db = firebase.firestore();
+const form = document.querySelector('#form');
 
+resultDisplay = document.getElementById('resultDisplay');
+modeDropdown = document.getElementById('btnGroupDrop1')
 
-const searchWordForm = document.querySelector('#search-word-form');
-const searchBookForm = document.querySelector('#search-book-form');
-const searchBookRegExForm = document.querySelector('#search-bookRegEx-form');
-const suggestBookForm = document.querySelector('#suggest-book-form');
+var mode = "searchWord"
 
-const basicList = document.querySelector('#basic-display');
-displayText = document.getElementById('display_text')
+function setSearchinWordgMode(){
+  mode = "searchWord"
+  modeDropdown.innerHTML = "Search word mode"
+}
+function setSearchingBookMode(){
+  mode = "searchBook"
+  modeDropdown.innerHTML = "Search book by title mode"
+}
+function setSearchingBookRegExMode(){
+  mode = "searchBookRegEx"
+  modeDropdown.innerHTML = "Search book by RegEx mode"
+}
+function setSuggestMode(){
+  mode = "suggestBook"
+  modeDropdown.innerHTML = "Suggest book mode"
+}
 
-
-
-// Search a book
-searchBookForm.addEventListener('submit', (e) => {
+form.addEventListener('submit', async(e) => {
   e.preventDefault();
- bookTitle = searchBookForm.bookName.value.split(" ").join("_")
-  if ( bookTitle.length< 3) {
-    alert("your entrie is too short, enter at least 3 character");
-  }
-  else {
-    document.getElementById("basic-display").innerHTML = "";
-    displayText.textContent = ""
 
-    fetch("https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/searchBook/"+bookTitle)
-      .then(data => { return data.json() })
-      .then(res => {
-        for (a in res) {
-            renderBook(res[a].split("_").join(" "))
-        }
-      })
+  if(mode === "searchWord"){
+    word = form.searchField.value.split(" ").join("_")
+    if (word.length >= 3) {
+      resultDisplay.innerHTML = "";
+      await callSearchWord(word)
+    }
+
+  }
+  else if(mode === "searchBook"){
+    
+    bookTitle = form.searchField.value.split(" ").join("_")
+    if (bookTitle.length >= 3) {
+      resultDisplay.innerHTML = "";
+      
+      await callSuggestBook(bookTitle)
+    }
+
+  }
+  else if(mode === "searchBookRegEx"){
+    bookRegEx = form.searchField.value.split(" ").join("_")
+    resultDisplay.innerHTML = "";
+
+    await callSearchRegExBook(bookRegEx);
+
+  }
+  else if(mode === "suggestBook"){
+    bookTitle = form.searchField.value.split(" ").join("_")
+    if (bookTitle.length >= 3) {
+      resultDisplay.innerHTML = "";
+      await callSuggestBook(bookTitle)
+    }
+
+  }
+  else{
+    console.log("unknow research mode : "+ mode)
   }
 
-  searchBookForm.bookName.value = ""
+  form.searchField.value = ""
   
 });
 
-searchBookRegExForm.addEventListener('submit', (e) => {
-  e.preventDefault();
- bookTitle = searchBookRegExForm.bookRegExName.value.split(" ").join("_")
-  treatedRegEx = regExTransform(bookTitle)
+async function callSearchWord(word){
+  const url = "https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/search" + "/" + word ;
+  const result = await (await fetch(url)).json();
+  for (key in result) {
+    renderWordSearch(word, key.split("_").join(" "), result[key]);
+  }
+}
 
-    document.getElementById("basic-display").innerHTML = "";
-    displayText.textContent = ""
-
-    fetch("https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/searchBookRegEx/"+treatedRegEx)
+async function callSearchBook(bookTitle){
+  fetch("https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/searchBook/"+bookTitle)
       .then(data => { return data.json() })
       .then(res => {
         for (a in res) {
             renderBook(res[a].split("_").join(" "))
         }
       })
+}
 
-      searchBookRegExForm.bookRegExName.value = ""
-});
+async function callSearchRegExBook(bookTitleRegEx){
+  treatedRegEx = regExTransform(bookTitleRegEx)
+  fetch("https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/searchBookRegEx/"+treatedRegEx)
+      .then(data => { return data.json() })
+      .then(res => {
+        for (a in res) {
+            renderBook(res[a].split("_").join(" "))
+        }
+      })
+}
 
-
-
-// Search word occurences in all books
-searchWordForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-
-  word = searchWordForm.searchWord.value
-  document.getElementById("basic-display").innerHTML = "";
-  displayText.textContent = ""
-
-  const url = "https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/search" + "/" + word ;
-  fetch(url)
-    .then(data => { return data.json() })
-    .then(res => {
-      for (key in res) {
-        renderWordSearch(key.split("_").join(" "), res[key]);
-      }
-    })
-    searchWordForm.searchWord.value = ""
-    
-});
-
-
-
-// Book suggestion
-suggestBookForm.addEventListener('submit', async(e) => {
-  e.preventDefault();
-
-  bookTitle = suggestBookForm.bookName.value.split(" ").join("_")
-
-  if (bookTitle.length < 3) {
-    alert("your entrie is too short, enter at least 3 character");
-  }
-  else {
-    document.getElementById("basic-display").innerHTML = "";
-    displayText.textContent = ""
-    
-    const result = await fetch("https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/suggestUsingCloseness/"+bookTitle)
+async function callSuggestBook(bookTitle){
+  fetch("https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/suggestUsingCloseness/"+bookTitle)
       .then(data => { return data.json() })
       .then( async(res) => {
         for(a in res){
           renderBook(res[a].split("_").join(" "))
         }
       })
-
-  }
-  suggestBookForm.bookName.value = ""
-});
-
-function displayBook(book){
-  const url = "https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/getBook" + "/" + book ;
-  
-  fetch(url)
-    .then(data => { return data.json() })
-    .then(res => {
-        renderBookContent(res.book);
-    })
-}
-
-function renderBook(book) {
-  let li = document.createElement('li');
-  let name = document.createElement('span');
-
-  li.setAttribute('book-id', book);
-  li.setAttribute('onclick','displayBook("'+book.split(" ").join("_")+'")');
-  
-  name.textContent = book;
-  li.appendChild(name);
-  basicList.appendChild(li);
-}
-
-function renderWordSearch(res, occu) {
-  let li = document.createElement('li');
-  let name = document.createElement('span');
-
-  li.setAttribute('search-id', res);
-  li.setAttribute('onclick','displayBook("'+res.split(" ").join("_")+'")');
-  
-  name.textContent = res + " : " + occu;
-  li.appendChild(name);
-  basicList.appendChild(li);
-}
-
-
-
-function renderBookContent(bookContent){
-  
-  displayText.setAttribute('style', 'white-space: pre;');
-  displayText.textContent = ""
-
-  displayText.textContent += "To read more you can go to Gutenberg.org or downloand this book here : " + "https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/getBook" + "/" + bookContent + "\n\n"
-  
-  if(bookContent.length < 11000){
-    text = bookContent.split("\n")
-    for (line in text){
-      displayText.textContent += text[line] + "\r\n"
-    }
-  }
 }
 
 function regExTransform(book){
-  const reg = book.split("{").join("accOuv");
-  const reg1 = reg.split("}").join("accFer");
-  const reg2 = reg1.split("\\").join("anti");
-  const reg3 = reg2.split("/").join("slash");
-  const reg4 = reg3.split(" ").join("space")
-  const reg5 = reg4.split("^").join("hat")
+  const reg = book.split("{").join("TOKEN_ACCOUV");
+  const reg1 = reg.split("}").join("TOKEN_ACCFER");
+  const reg2 = reg1.split("\\").join("TOKEN_ANTI");
+  const reg3 = reg2.split("/").join("TOKEN_SLASH");
+  const reg4 = reg3.split(" ").join("TOKEN_SPACE")
+  const reg5 = reg4.split("^").join("TOKEN_HAT")
   return reg5
 }
+
+
+function renderBook(book) {
+  let div = document.createElement('div');
+  let li = document.createElement('li');
+  let a = document.createElement('a')
+
+  li.setAttribute('class', "p-2 flex-fill list-group-item");
+  li.innerHTML = book.slice(0, -4);
+
+  a.setAttribute('class', "p-2 flex-fill d-flex badge badge-primary badge-pill")
+  a.setAttribute('href',"https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/getBook/" + book.split(" ").join("_") )
+  a.innerHTML = "Download book"
+
+  div.setAttribute('class', 'd-flex list-group list-group-horizontal');
+
+
+  li.appendChild(a)
+  div.appendChild(li)  
+  
+  resultDisplay.appendChild(div);
+}
+
+function renderWordSearch(word, res, occu) {
+  
+  let div = document.createElement('div');
+  let li = document.createElement('li');
+  let span = document.createElement('span');
+  let a = document.createElement('a')
+
+  li.setAttribute('class', "p-2 flex-fill list-group-item");
+  li.innerHTML = res.slice(0, -4);
+
+  span.setAttribute('class', "p-2 flex-fill d-flex align-items-end badge badge-light badge-pill");
+  span.innerHTML = "Has " + occu + " occurences of "+word;
+
+  a.setAttribute('class', "p-2 flex-fill d-flex badge badge-primary badge-pill")
+  a.setAttribute('href',"https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/getBook/" + res.split(" ").join("_") )
+  a.innerHTML = "Download book"
+
+  div.setAttribute('class', 'd-flex list-group list-group-horizontal');
+
+  
+  li.appendChild(span)
+  li.appendChild(a)
+  div.appendChild(li)
+  resultDisplay.appendChild(div);  
+  
+}
+

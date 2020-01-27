@@ -180,7 +180,7 @@ exports.getBook = functions
     
     admin.storage().bucket().file(book).download().then(data => {
       res.set('Access-Control-Allow-Origin', '*');
-      return res.send({book : data.toString()});
+      return res.send(data[0]);
     }).catch(error => {
           console.log(error)
           res.set('Access-Control-Allow-Origin', '*');
@@ -268,12 +268,12 @@ exports.search = functions
   });
 
   function regExTransform(book){
-    const reg = book.split("accOuv").join("{");
-    const reg1 = reg.split("accFer").join("}");
-    const reg2 = reg1.split("anti").join("\\");
-    const reg3 = reg2.split("slash").join("/");
-    const reg4 = reg3.split("space").join("_");
-    const reg5 = reg4.split("hat").join("^");
+    const reg = book.split("TOKEN_ACCOUV").join("{");
+    const reg1 = reg.split("TOKEN_ACCFER").join("}");
+    const reg2 = reg1.split("TOKEN_ANTI").join("\\");
+    const reg3 = reg2.split("TOKEN_SLASH").join("/");
+    const reg4 = reg3.split("TOKEN_SPACE").join("_");
+    const reg5 = reg4.split("TOKEN_HAT").join("^");
     return reg5;
   }
 
