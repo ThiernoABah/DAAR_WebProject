@@ -19,9 +19,13 @@ function setSearchingBookRegExMode(){
   mode = "searchBookRegEx"
   modeDropdown.innerHTML = "Search book by RegEx mode"
 }
-function setSuggestMode(){
-  mode = "suggestBook"
-  modeDropdown.innerHTML = "Suggest book mode"
+function setSuggestClosenessMode(){
+  mode = "suggestClosenessBook"
+  modeDropdown.innerHTML = "Suggest book by closeness mode"
+}
+function setSuggestJaccardMode(){
+  mode = "suggestJaccardBook"
+  modeDropdown.innerHTML = "Suggest book by Jaccard dist mode"
 }
 
 form.addEventListener('submit', async(e) => {
@@ -31,16 +35,16 @@ form.addEventListener('submit', async(e) => {
     word = form.searchField.value.split(" ").join("_")
     if (word.length >= 3) {
       resultDisplay.innerHTML = "";
+      document.querySelector('#spinner').style.display = 'block';
       await callSearchWord(word)
     }
 
   }
   else if(mode === "searchBook"){
-    
     bookTitle = form.searchField.value.split(" ").join("_")
     if (bookTitle.length >= 3) {
       resultDisplay.innerHTML = "";
-      
+      document.querySelector('#spinner').style.display = 'block';
       await callSuggestBook(bookTitle)
     }
 
@@ -48,15 +52,25 @@ form.addEventListener('submit', async(e) => {
   else if(mode === "searchBookRegEx"){
     bookRegEx = form.searchField.value.split(" ").join("_")
     resultDisplay.innerHTML = "";
-
+    document.querySelector('#spinner').style.display = 'block';
     await callSearchRegExBook(bookRegEx);
 
   }
-  else if(mode === "suggestBook"){
+  else if(mode === "suggestClosenessBook"){
     bookTitle = form.searchField.value.split(" ").join("_")
     if (bookTitle.length >= 3) {
       resultDisplay.innerHTML = "";
-      await callSuggestBook(bookTitle)
+      document.querySelector('#spinner').style.display = 'block';
+      await callSuggestClosenessBook(bookTitle)
+    }
+
+  }
+  else if(mode === "suggestJaccardBook"){
+    bookTitle = form.searchField.value.split(" ").join("_")
+    if (bookTitle.length >= 3) {
+      resultDisplay.innerHTML = "";
+      document.querySelector('#spinner').style.display = 'block';
+      await callSuggestJaccardBook(bookTitle)
     }
 
   }
@@ -71,6 +85,7 @@ form.addEventListener('submit', async(e) => {
 async function callSearchWord(word){
   const url = "https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/search" + "/" + word ;
   const result = await (await fetch(url)).json();
+  document.querySelector('#spinner').style.display = 'none';
   for (key in result) {
     renderWordSearch(word, key.split("_").join(" "), result[key]);
   }
@@ -80,6 +95,7 @@ async function callSearchBook(bookTitle){
   fetch("https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/searchBook/"+bookTitle)
       .then(data => { return data.json() })
       .then(res => {
+        document.querySelector('#spinner').style.display = 'none';
         for (a in res) {
             renderBook(res[a].split("_").join(" "))
         }
@@ -91,16 +107,29 @@ async function callSearchRegExBook(bookTitleRegEx){
   fetch("https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/searchBookRegEx/"+treatedRegEx)
       .then(data => { return data.json() })
       .then(res => {
+        document.querySelector('#spinner').style.display = 'none';
         for (a in res) {
             renderBook(res[a].split("_").join(" "))
         }
       })
 }
 
-async function callSuggestBook(bookTitle){
+async function callSuggestClosenessBook(bookTitle){
   fetch("https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/suggestUsingCloseness/"+bookTitle)
       .then(data => { return data.json() })
-      .then( async(res) => {
+      .then(res => {
+        document.querySelector('#spinner').style.display = 'none';
+        for(a in res){
+          renderBook(res[a].split("_").join(" "))
+        }
+      })
+}
+
+async function callSuggestJaccardBook(bookTitle){
+  fetch("https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/suggestUsingJaccard/"+bookTitle)
+      .then(data => { return data.json() })
+      .then( res => {
+        document.querySelector('#spinner').style.display = 'none';
         for(a in res){
           renderBook(res[a].split("_").join(" "))
         }

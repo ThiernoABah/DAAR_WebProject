@@ -195,8 +195,8 @@ exports.deleteBook = functions
   .https.onRequest((req, res) => {
     var book = req.path.replace("/", "");
 
-    db.collection('livres').doc(book).delete();
-    return res.send(book + "deleted");
+    //db.collection('livres').doc(book).delete();
+    return res.send("function disabled");
 
   });
 
@@ -206,7 +206,8 @@ exports.deleteAllBook = functions
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
   .https.onRequest((req, res) => {
 
-    db.collection('livres').get().then(querySnapshot => {
+    return res.send("function disabled");
+    /*db.collection('livres').get().then(querySnapshot => {
       querySnapshot.forEach(doc => {
         db.collection('livres').doc(doc.id).delete();
       });
@@ -214,7 +215,7 @@ exports.deleteAllBook = functions
     }).catch(error => {
       console.log(error)
       res.status(500).send(error)
-    });
+    });*/
   });
 
 
@@ -223,7 +224,7 @@ exports.search = functions
   .runWith({ memory: "1GB", timeoutSeconds: 540 })
   .https.onRequest((req, res) => {
     r = {}
-    var word = req.path.replace("/", "");
+    var word = req.path.replace("/", "").toLowerCase();
 
     db.collection('livres').orderBy(word,'desc').limit(10)
     .get().then(querySnapshot => {
