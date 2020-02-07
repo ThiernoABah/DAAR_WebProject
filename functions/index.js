@@ -129,6 +129,18 @@ exports.storageTreat = functions
       });
       await db.collection('suggest').doc(object.name).set(data)
     }
+    else if (object.name === "all_words.txt") { 
+      lines = fs.readFileSync(tempFilePath).toString().split("\n");
+      lines.forEach(line => {
+        var tmpMots = line.split(" ");
+        var word = tmpMots[0]
+        var book = tmpMots[1] + " " + tmpMots[3]
+        if (word !== "") {
+              data[word] = book
+          }
+        });
+      await db.collection('words').doc(object.name).set(data)
+    }
     else {
       lines = fs.readFileSync(tempFilePath).toString().split("\n");
       lines.forEach(line => {
@@ -334,7 +346,6 @@ exports.search = functions
 
     var regTransformed = regExTransform(book)
     var re = new RegExp(regTransformed);
-    console.log("regex : "+ re)
     db.collection('graphe').doc("id_node.txt").get().then(doc => {
       data = doc.data();
       for (a in data) {
@@ -352,6 +363,48 @@ exports.search = functions
       });
 
   });
+
+  // Function that allows us to search a word in our database using a regEx and return the top 15 book in which the word appear the most
+// exports.searchWordRegEx = functions
+// .region('europe-west2')
+// .runWith({ memory: "1GB", timeoutSeconds: 540 })
+// .https.onRequest((req, res) => {
+//   r = {}
+//   var word = req.path.replace("/", "");
+  
+//   if(word === ".*"){
+//       res.set('Access-Control-Allow-Origin', '*');
+//       return res.send("please dont enter this one"); // les mots qui appraisse le plus ?
+//   }
+
+//   var regTransformed = regExTransform(word)
+//   var re = new RegExp(regTransformed);
+//   nbW = 0;
+
+//   console.log(word);
+  
+//   db.collection('words').doc("all_words.txt").get().then(doc => {
+//     data = doc.data();
+//     for (a in data) {
+//       if (data[a].search(re) !== -1 && nbW <= 15) {
+//         console.log(data[a])
+//         nbW ++;
+//         r[a] = data[a];
+//       }
+//       if(nbW >= 15 ){
+//         break;
+//       }
+//     }
+
+//     res.set('Access-Control-Allow-Origin', '*');
+//     return res.send(r);
+
+//   } ).catch(error => {
+//       console.log(error)
+//       res.set('Access-Control-Allow-Origin', '*');
+//       res.status(500).send(error)
+//     });
+// });
 
 
   // Get a book title from a node id in our graph

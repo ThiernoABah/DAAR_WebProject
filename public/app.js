@@ -73,14 +73,13 @@ async function callSearchWord(word){
 
 async function callSearchBook(bookTitle){
   fetch("https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/searchBook/"+bookTitle)
-      .then(data => { return data.json() })
+    .then(data => { return data.json() })
       .then(res => {
-       
         for (a in res) {
-            renderBook(res[a].split("_").join(" "))
+          renderBook(res[a].split("_").join(" "))
         }
         document.querySelector('#spinner').style.display = 'none';
-      })
+    })
 }
 
 async function callSearchRegExBook(bookTitleRegEx){
@@ -133,7 +132,9 @@ async function renderBook(book) {
 
   div.setAttribute('class', 'list-group');
   div.appendChild(a)  
-  div.style.marginBottom = "2%"
+  
+  div.style.marginTop = "1%"
+  div.style.marginBottom = "1%"
   
   renderSuggestion(div, book);
 
@@ -159,7 +160,8 @@ async function renderWordSearch(word, res, occu) {
   div.appendChild(a)
   div.appendChild(span)
   
-  div.style.marginBottom = "2%"
+  div.style.marginTop = "1%"
+  div.style.marginBottom = "1%"
 
   renderSuggestion(div, res);
 
@@ -200,4 +202,3 @@ async function renderSuggestion(container, bookTitle){
     }
   container.appendChild(ul)
 }
-
