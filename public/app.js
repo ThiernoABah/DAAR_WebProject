@@ -75,10 +75,11 @@ async function callSearchBook(bookTitle){
   fetch("https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/searchBook/"+bookTitle)
       .then(data => { return data.json() })
       .then(res => {
-        document.querySelector('#spinner').style.display = 'none';
+       
         for (a in res) {
             renderBook(res[a].split("_").join(" "))
         }
+        document.querySelector('#spinner').style.display = 'none';
       })
 }
 
@@ -87,10 +88,10 @@ async function callSearchRegExBook(bookTitleRegEx){
   fetch("https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/searchBookRegEx/"+treatedRegEx)
       .then(data => { return data.json() })
       .then(res => {
-        document.querySelector('#spinner').style.display = 'none';
         for (a in res) {
             renderBook(res[a].split("_").join(" "))
         }
+        document.querySelector('#spinner').style.display = 'none';
       })
 }
 
@@ -100,11 +101,10 @@ async function randomBooks(){
   fetch("https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/randomBook")
       .then(data => { return data.json() })
       .then( res => {
-        document.querySelector('#spinner').style.display = 'none';
         for(a in res){
           renderBook(res[a].split("_").join(" "))
         }
-        
+        document.querySelector('#spinner').style.display = 'none';
       })
 }
 ///////////////////////////////////////////////////////////////////////////////////
@@ -161,7 +161,7 @@ async function renderWordSearch(word, res, occu) {
   
   div.style.marginBottom = "2%"
 
-  await renderSuggestion(div, res);
+  renderSuggestion(div, res);
 
   resultDisplay.appendChild(div);  
 }
@@ -170,9 +170,7 @@ async function renderWordSearch(word, res, occu) {
 async function renderSuggestion(container, bookTitle){
   let line = document.createElement('li');
   line.setAttribute('class', "list-group-item-secondary")
-  line.innerHTML = "You may also like these books : ";
-
-  container.appendChild(line)
+  
 
   let ul = document.createElement('ul');
   ul.setAttribute("class", "list-group list-group-horizontal");
@@ -187,6 +185,11 @@ async function renderSuggestion(container, bookTitle){
   }
   
   const result = await (await fetch(url)).json();
+
+  if(Object.keys( result ).length > 0){
+    line.innerHTML = "You may also like these books : ";
+    container.appendChild(line)
+  }
   for (key in result) {
     book = result[key];
     let a = document.createElement('a');
