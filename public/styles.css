@@ -3,3 +3,7 @@
     cursor: pointer;
     background-image: none;
 }
+
+.displayer{
+    flex: content;
+}

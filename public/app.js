@@ -20,14 +20,7 @@ function setSearchingBookRegExMode(){
   mode = "searchBookRegEx"
   modeDropdown.innerHTML = "Search book by RegEx"
 }
-function setSuggestClosenessMode(){
-  mode = "suggestClosenessBook"
-  modeDropdown.innerHTML = "Suggest book by Closeness"
-}
-function setSuggestJaccardMode(){
-  mode = "suggestJaccardBook"
-  modeDropdown.innerHTML = "Suggest book using Jaccard dist"
-}
+
 ///////////////////////////////////////////////////////////////////////////////////
 
 // Call the right API call depending on the search mode ///////////////////////////
@@ -38,7 +31,7 @@ form.addEventListener('submit', async(e) => {
     word = form.searchField.value.split(" ").join("_")
     if (word.length >= 3) {
       resultDisplay.innerHTML = "";
-      document.querySelector('#spinner').style.display = 'block';
+      document.querySelector('#spinner').style.display = 'inline-block';
       await callSearchWord(word)
     }
 
@@ -47,7 +40,7 @@ form.addEventListener('submit', async(e) => {
     bookTitle = form.searchField.value.split(" ").join("_")
     if (bookTitle.length >= 3) {
       resultDisplay.innerHTML = "";
-      document.querySelector('#spinner').style.display = 'block';
+      document.querySelector('#spinner').style.display = 'inline-block';
       await callSearchBook(bookTitle)
     }
 
@@ -55,26 +48,9 @@ form.addEventListener('submit', async(e) => {
   else if(mode === "searchBookRegEx"){
     bookRegEx = form.searchField.value.split(" ").join("_")
     resultDisplay.innerHTML = "";
-    document.querySelector('#spinner').style.display = 'block';
+    document.querySelector('#spinner').style.display = 'inline-block';
     await callSearchRegExBook(bookRegEx);
 
-  }
-  else if(mode === "suggestClosenessBook"){
-    bookTitle = form.searchField.value.split(" ").join("_")
-    if (bookTitle.length >= 3) {
-      resultDisplay.innerHTML = "";
-      document.querySelector('#spinner').style.display = 'block';
-      await callSuggestClosenessBook(bookTitle)
-    }
-
-  }
-  else if(mode === "suggestJaccardBook"){
-    bookTitle = form.searchField.value.split(" ").join("_")
-    if (bookTitle.length >= 3) {
-      resultDisplay.innerHTML = "";
-      document.querySelector('#spinner').style.display = 'block';
-      await callSuggestJaccardBook(bookTitle)
-    }
   }
   else{
     console.log("unknow research mode : "+ mode)
@@ -118,31 +94,9 @@ async function callSearchRegExBook(bookTitleRegEx){
       })
 }
 
-async function callSuggestClosenessBook(bookTitle){
-  fetch("https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/suggestUsingCloseness/"+bookTitle)
-      .then(data => { return data.json() })
-      .then(res => {
-        document.querySelector('#spinner').style.display = 'none';
-        for(a in res){
-          renderBook(res[a].split("_").join(" "))
-        }
-      })
-}
-
-async function callSuggestJaccardBook(bookTitle){
-  fetch("https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/suggestUsingJaccard/"+bookTitle)
-      .then(data => { return data.json() })
-      .then( res => {
-        document.querySelector('#spinner').style.display = 'none';
-        for(a in res){
-          renderBook(res[a].split("_").join(" "))
-        }
-      })
-}
-
 async function randomBooks(){
   resultDisplay.innerHTML = "";
-  document.querySelector('#spinner').style.display = 'block';
+  document.querySelector('#spinner').style.display = 'inline-block';
   fetch("https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/randomBook")
       .then(data => { return data.json() })
       .then( res => {
@@ -150,6 +104,7 @@ async function randomBooks(){
         for(a in res){
           renderBook(res[a].split("_").join(" "))
         }
+        
       })
 }
 ///////////////////////////////////////////////////////////////////////////////////
@@ -167,47 +122,79 @@ function regExTransform(book){
 }
 
 //// Functions in charge of displaying the result of functions call //////////////
-function renderBook(book) {
+async function renderBook(book) {
   let div = document.createElement('div');
-  let li = document.createElement('li');
   let a = document.createElement('a')
 
-  li.setAttribute('class', "p-2 flex-fill list-group-item");
-  li.innerHTML = book.slice(0, -4);
-
-  a.setAttribute('class', "p-2 flex-fill d-flex badge badge-primary badge-pill")
+  a.setAttribute('class', "list-group-item list-group-item-primary")
   a.setAttribute('href',"https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/getBook/" + book.split(" ").join("_") )
-  a.innerHTML = "Download book"
+  a.innerHTML = book.slice(0, -4);
+  a.style.fontSize = "large";
 
-  div.setAttribute('class', 'd-flex list-group list-group-horizontal');
-  li.appendChild(a)
-  div.appendChild(li)  
+  div.setAttribute('class', 'list-group');
+  div.appendChild(a)  
+  div.style.marginBottom = "2%"
   
+  await renderSuggestion(div, book);
+
   resultDisplay.appendChild(div);
+  
 }
 
-function renderWordSearch(word, res, occu) {
+async function renderWordSearch(word, res, occu) {
   
   let div = document.createElement('div');
-  let li = document.createElement('li');
   let span = document.createElement('span');
   let a = document.createElement('a')
 
-  li.setAttribute('class', "p-2 flex-fill list-group-item");
-  li.innerHTML = res.slice(0, -4);
+  span.setAttribute('class', "list-group-item-secondary");
+  span.innerHTML = "This book has " + occu + " occurences of the word : "+word;
 
-  span.setAttribute('class', "p-2 flex-fill d-flex align-items-end badge badge-light badge-pill");
-  span.innerHTML = "Has " + occu + " occurences of "+word;
-
-  a.setAttribute('class', "p-2 flex-fill d-flex badge badge-primary badge-pill")
+  a.setAttribute('class', "list-group-item list-group-item-primary")
   a.setAttribute('href',"https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/getBook/" + res.split(" ").join("_") )
-  a.innerHTML = "Download book"
+  a.innerHTML = res.slice(0, -4);
+  a.style.fontSize = "large";
 
-  div.setAttribute('class', 'd-flex list-group list-group-horizontal');
-  li.appendChild(span)
-  li.appendChild(a)
-  div.appendChild(li)
-  resultDisplay.appendChild(div);  
+  div.setAttribute('class', 'list-group');
+  div.appendChild(a)
+  div.appendChild(span)
   
+  div.style.marginBottom = "2%"
+
+  await renderSuggestion(div, res);
+
+  resultDisplay.appendChild(div);  
+}
+
+// Function use to get suggestion for a book, we use it to make an implicite suggestion for books
+async function renderSuggestion(container, bookTitle){
+  let line = document.createElement('li');
+  line.setAttribute('class', "list-group-item-secondary")
+  line.innerHTML = "You may also like these books : ";
+
+  container.appendChild(line)
+
+  let ul = document.createElement('ul');
+  ul.setAttribute("class", "list-group list-group-horizontal");
+
+  toss = Math.floor(Math.random() * 2);
+  var url = ""
+  if(toss == 0){
+    url = "https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/suggestUsingJaccard/" + bookTitle.split(" ").join("_");
+  }
+  else{
+    url = "https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/suggestUsingCloseness/" + bookTitle.split(" ").join("_");
+  }
+  
+  const result = await (await fetch(url)).json();
+  for (key in result) {
+    book = result[key];
+    let a = document.createElement('a');
+    a.setAttribute('class', "list-group-item")
+    a.setAttribute('href',"https://europe-west2-prismaticos-ebe3f.cloudfunctions.net/getBook/" + book )
+    a.innerHTML = book.slice(0, -4).split("_").join(" ")
+    ul.appendChild(a)
+    }
+  container.appendChild(ul)
 }
 
