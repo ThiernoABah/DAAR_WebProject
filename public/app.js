@@ -135,7 +135,7 @@ async function renderBook(book) {
   div.appendChild(a)  
   div.style.marginBottom = "2%"
   
-  await renderSuggestion(div, book);
+  renderSuggestion(div, book);
 
   resultDisplay.appendChild(div);
   
