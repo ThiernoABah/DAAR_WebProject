@@ -1,4 +1,4 @@
-# DAAR_WebProject partie Firebase
+# DAAR Projet Web partie Firebase
 
 Ce projet contient toutes les fonctions du back end heberger sur Firebase functions et le front end du site web https://prismaticos-ebe3f.firebaseapp.com/ heberger sur Firebase Hosting dans le cadre de l'UE Daar.
 
