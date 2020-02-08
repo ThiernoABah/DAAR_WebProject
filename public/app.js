@@ -33,6 +33,12 @@ form.addEventListener('submit', async(e) => {
       resultDisplay.innerHTML = "";
       document.querySelector('#spinner').style.display = 'inline-block';
       await callSearchWord(word)
+    }else{
+      resultDisplay.innerHTML = "";
+      let div = document.createElement('div');
+      div.setAttribute('class', "mx-auto alert alert-warning")
+      div.innerHTML = "Please enter at least 3 character";
+      resultDisplay.appendChild(div);
     }
 
   }
@@ -42,6 +48,13 @@ form.addEventListener('submit', async(e) => {
       resultDisplay.innerHTML = "";
       document.querySelector('#spinner').style.display = 'inline-block';
       await callSearchBook(bookTitle)
+    }
+    else{
+      resultDisplay.innerHTML = "";
+      let div = document.createElement('div');
+      div.setAttribute('class', "mx-auto alert alert-warning")
+      div.innerHTML = "Please enter at least 3 character";
+      resultDisplay.appendChild(div);
     }
 
   }

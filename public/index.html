@@ -22,7 +22,7 @@
 
 <body >
     <nav class="navbar sticky-top navbar-dark bg-dark">
-        <h1 class="navbar-brand mb-3" href="#">Prismaticos</h1>
+        <h1 class="navbar-brand mb-3" href="#" onClick="window.location.reload();">Prismaticos</h1>
         
         <form id="form" class="form-inline col-sm-9 ">
             <button type="button" class="btn btn-secondary" onclick="randomBooks()">Random Books</button>
@@ -45,7 +45,18 @@
         <div id="spinner" style="display: none;" class="spinner-border" role="status">
             <span class="sr-only">Loading...</span>
           </div>
-        <ul id="resultDisplay" class="list-group"></ul>
+        <ul id="resultDisplay" class="list-group">
+            <div class="card text-center">
+                <div class="card-header" style="font-size: xx-large;">
+                  Welcome to Prismaticos
+                </div>
+                <div class="card-body">
+                  <h5 class="card-text">Prismaticos is a searching tool over a library of 1664 books from Gutenbergs website.</h5>
+                  <h5 class="card-text">With Prismaticos you can search words in this library and even search books by title or by using a regular expression.</h5>
+                  <h5 class="card-text">Try out or three searching mode in the dropdown menu and if you are feeling lucky you can try to get random books maybe you'll discover a good one.</h5>
+                </div>
+              </div>
+        </ul>
     </div>
     <div class="card-footer text-muted">
         <a href="https://github.com/ThiernoABah/DAAR_WebProject" title="Github">Github Firebase Project</a><br/>

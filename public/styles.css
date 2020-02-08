@@ -4,6 +4,12 @@
     background-image: none;
 }
 
+h1:hover{
+    background-color: #868e96;
+    cursor: pointer;
+    background-image: none;
+}
+
 .displayer{
     flex: content;
 }
